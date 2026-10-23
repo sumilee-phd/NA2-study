@@ -105,6 +105,17 @@ test('router commands stay within what the ICQA router demo accepted', () => {
   assert.ok(LAB_BY_ID['router-interface'].solution[0].commands.includes('interface FastEthernet0/0'));
 });
 
+test('windows labs record what the ICQA Windows emulator showed', () => {
+  for (const lab of LABS.filter(item => item.group === 'windows')) {
+    assert.ok(lab.sourceNotes.some(note => note.startsWith('ICQA Windows 실습용 에뮬레이터 확인(2026-10-23)')), lab.id);
+    assert.ok(!lab.sourceNotes.some(note => note.includes('설치·실행하여 동작을 검증한 결과는 아닙니다')), lab.id);
+  }
+  const text = id => JSON.stringify(LAB_BY_ID[id].steps);
+  assert.match(text('windows-dhcp'), /8일·0시간·0분/);
+  assert.match(text('windows-dns-soa'), /0:1:0:0/);
+  assert.match(text('windows-ipv4'), /고정 예시 값/);
+});
+
 test('lab routes accept only known exact identifiers and reject inherited names', () => {
   for (const lab of LABS) assert.equal(labFromPath(`/practical/lab/${lab.id}`), lab);
   for (const path of ['/practical/lab/constructor', '/practical/lab/__proto__', '/practical/lab/missing', '/practical/lab/windows-ipv4/extra']) assert.equal(labFromPath(path), null);
