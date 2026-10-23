@@ -44,7 +44,7 @@ export const LESSONS = Object.freeze([
     ], sourceIds: ['h3c-wiring', 'fluke-t568'],
   },
   {
-    id: 'orientation', title: '플러그의 방향부터 확인',
+    id: 'orientation', title: '플러그 관찰 방향',
     paragraphs: [
       '이 앱의 핀 배열은 RJ-45 플러그의 금속 접점이 보이는 면을 보고, 고정 클립은 관찰자 반대쪽에 둔 기준입니다. 그림의 왼쪽을 1번, 오른쪽을 8번으로 읽습니다.',
       '플러그를 뒤집거나 잭의 뒤쪽 결선 단자를 보면 좌우와 배치가 달라질 수 있습니다. 실제 작업에서는 커넥터의 번호와 제조사 결선 표시를 함께 확인하세요.',
