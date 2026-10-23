@@ -43,5 +43,6 @@ npm run preview
 - [필기 통합](docs/WRITTEN_INTEGRATION.md)
 - [실기 통합](docs/CABLING_INTEGRATION.md)
 - [검증 결과](docs/VERIFICATION.md)
+- [공개 배포 검증](docs/DEPLOYMENT.md)
 
 원본 폴더 두 개가 이 프로젝트의 형제 폴더에 있으면 `npm run verify:originals`로 기준 커밋·작업 트리·파일 해시를 확인할 수 있습니다. 원본을 고치거나 되돌리는 동작은 수행하지 않습니다.
