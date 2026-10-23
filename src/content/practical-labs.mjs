@@ -1,0 +1,14 @@
+import { WINDOWS_LABS } from './windows-labs.mjs';
+import { ROUTER_LABS } from './router-labs.mjs';
+
+export const LABS = [...WINDOWS_LABS, ...ROUTER_LABS];
+export const LAB_BY_ID = Object.assign(Object.create(null), Object.fromEntries(LABS.map(lab => [lab.id, lab])));
+export const LAB_GROUPS = [
+  { id: 'windows', title: 'Windows Server', description: 'IPv4 주소를 계산하고 DHCP·DNS의 설정값을 확인합니다.' },
+  { id: 'router', title: '라우터', description: '명령 모드와 설정 대상을 구분하고 확인·저장 순서를 익힙니다.' },
+];
+
+export function labFromPath(path) {
+  const match = /^\/practical\/lab\/([a-z0-9-]+)$/.exec(path);
+  return match ? LAB_BY_ID[match[1]] || null : null;
+}

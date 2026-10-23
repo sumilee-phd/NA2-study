@@ -8,6 +8,7 @@ import { PRACTICAL_NAV, practicalSection } from './content/practical.mjs';
 const Written = lazy(() => import('./modules/written/WrittenApp.jsx'));
 const Cabling = lazy(() => import('./modules/cabling/App.jsx'));
 const PracticalQuiz = lazy(() => import('./PracticalQuiz.jsx'));
+const PracticalLabs = lazy(() => import('./PracticalLabs.jsx'));
 const SUBJECTS = ['전체', '네트워크일반', 'TCP/IP', 'NOS', '네트워크운용기기', '실기 케이블링'];
 const TOPIC_BY_ID = Object.fromEntries(TOPICS.map(topic => [topic.id, topic]));
 const MODULE_PATHS = { learn: '/learn', written: '/written', practical: '/practical' };
@@ -40,7 +41,8 @@ export default function App() {
   const isPractical = active === 'practical' || active === 'cabling';
   const productArea = isPractical ? 'practical' : active;
   const isQuestions = route.path === '/practical/questions';
-  const [visited, setVisited] = useState(() => ({ written: active === 'written', cabling: active === 'cabling', questions: isQuestions }));
+  const isLabs = active === 'practical' && practicalSection(route.path) === 'lab';
+  const [visited, setVisited] = useState(() => ({ written: active === 'written', cabling: active === 'cabling', questions: isQuestions, labs: isLabs }));
   const [moduleRoutes, setModuleRoutes] = useState(() => ({ written: active === 'written' ? route.path : '/written', cabling: active === 'cabling' ? route.path : '/cabling' }));
   const [initial] = useState(() => loadLearning(storage()));
   const [learning, setLearning] = useState(initial.state);
@@ -65,6 +67,7 @@ export default function App() {
   }, []);
   useEffect(() => {
     if (route.path === '/practical/questions') setVisited(value => value.questions ? value : { ...value, questions: true });
+    if (active === 'practical' && practicalSection(route.path) === 'lab') setVisited(value => value.labs ? value : { ...value, labs: true });
     if (active === 'written' || active === 'cabling') {
       setVisited(value => ({ ...value, [active]: true }));
       setModuleRoutes(value => ({ ...value, [active]: route.path }));
@@ -127,7 +130,8 @@ export default function App() {
     <main id="hub-content" className="hub-content" hidden={!isHub} tabIndex={-1}>
       {assessmentGate && <div className="hub-empty"><h1>진행 중 평가</h1><p>평가를 마친 뒤 이론·실기 안내·개념 확인을 이용할 수 있습니다.<br/>현재 답안은 보존되며 필기 실전 시험의 제한시간은 계속 흐릅니다.</p><div className="hub-actions" style={{justifyContent:'center'}}>{assessment.written && <a className="hub-button primary" href="#/written">필기 평가로 돌아가기</a>}{assessment.cabling && <a className="hub-button primary" href="#/cabling">케이블링 평가로 돌아가기</a>}</div></div>}
       <div hidden={assessmentGate}>
-      {!assessmentGate && active === 'practical' && !isQuestions && <PracticalPage path={route.path}/>}
+      {!assessmentGate && active === 'practical' && !isQuestions && !isLabs && <PracticalPage path={route.path}/>}
+      {visited.labs && <Suspense fallback={isLabs && !assessmentGate ? <Loading/> : null}><PracticalLabs path={route.path} visible={isLabs && !assessmentGate}/></Suspense>}
       {visited.questions && <Suspense fallback={isQuestions && !assessmentGate ? <Loading/> : null}><PracticalQuiz visible={isQuestions && !assessmentGate}/></Suspense>}
       {route.path === '/learn' && <>
         <section className="hub-hero"><div><span className="hub-eyebrow">NETWORK ADMINISTRATOR / LEVEL 2</span><h1>네트워크관리사 2급<br/><span>통합 학습센터</span></h1><p>핵심 개념을 이해하고, 필기 문제풀이와 실기 세 영역으로 준비하세요.<br className="hub-desktop-break"/> 학습 안내부터 오답 교정까지 한곳에서 이어집니다.</p><div className="hub-actions"><a className="hub-button primary" href="#/learn/theory">이론 학습 시작 <Icon name="arrow" size={17}/></a><a className="hub-button" href="#/learn/guide">처음 이용하시나요?</a></div></div><div className="hub-path-card"><span className="hub-eyebrow">나의 학습 순서</span><ol><li><span>01</span><div><b>개념 이해</b><small>설명 · 도해 · 개념 확인</small></div><Icon name="book"/></li><li><span>02</span><div><b>문제와 실습</b><small>필기 문제풀이 · 실기 영역별 준비</small></div><Icon name="pen"/></li><li><span>03</span><div><b>오답 복습</b><small>핀별 복습 · 배열 교정 · 재확인</small></div><Icon name="check"/></li></ol><div className="hub-read-progress"><span>읽은 이론 <b>{readCount} / {TOPICS.length}</b></span><progress max={TOPICS.length} value={readCount}/><small>읽음 표시는 학습 확인용이며 평가 점수에 포함되지 않습니다.</small></div></div></section>
