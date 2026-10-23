@@ -60,3 +60,14 @@ GitHub의 Ubuntu·Node.js 22 환경에서 의존성 설치, 58개 테스트, Vit
 기존 `NA2-com`과 `NA2-cabling`의 로컬·GitHub main 커밋은 각각 `7e0c035d8f49063ae51e5715bb5dd9062487da20`, `8036a544085cf96f52e535bda8ebd8c14c86031b`로 유지됐다. 로컬 추적 파일 42개의 SHA-256도 기준 기록과 일치했다. 기존 리포와 공개 앱의 코드·배포는 변경하지 않았다.
 
 이번 공개 검증은 데스크톱 브라우저의 핵심 흐름을 확인한 것이다. 실제 스마트폰·모든 브라우저·900문항 전체의 답안 정확도를 인증하는 검증은 아니다. 초기 이론 범위와 실물 케이블 측정의 한계는 기존 문서를 따른다.
+
+## 2026-10-23 Windows·라우터 실습 자료 배포
+
+- 배포 코드: [`a75eadf1f975a5d8e8d1ca92a3235ea11bbe4fcb`](https://github.com/sumilee-phd/NA2-study/commit/a75eadf1f975a5d8e8d1ca92a3235ea11bbe4fcb)
+- [자동 검증 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/39916887390): Ubuntu·Node.js 22의 설치·테스트·빌드 통과.
+- [Pages 배포 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/39916887550): 2026-10-23 16:24 KST 완료. 배포용 빌드에서도 설치·96개 테스트·빌드·아티팩트 업로드를 통과했다.
+- 공개 주소: [Windows·라우터 실습 자료](https://sumilee-phd.github.io/NA2-study/#/practical/lab)
+
+공개 브라우저에서 8개 과제 목록을 확인했다. 메인 번들 `index-BAnhN6dL.js`는 `/NA2-study/` 경로로 로컬 검수한 빌드와 동일한 이름이다. DHCP 과제에서 `/25`, 제외 범위 `.1~.10`, 임대 6시간, 후보 첫 주소 `.11`, 후보 수 116을 입력하여 6/6 일치 판정을 확인했다. 새로고침 후 입력·판정이 유지됐고 목록 진행률은 1/8이었다. 공개 검수 탭의 error·warn 로그는 없었다.
+
+로컬에서는 8과제의 44항목 입력 판정과 8/8 진행률, 360px 모바일 화면, 기존 필기·케이블링·실기 문제풀이 연결을 확인했다. 자세한 범위와 한계는 [실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md)를 따른다. 공개 증거 이미지는 Git 제외 폴더 `verification/practical-labs-20261023/public-labs.png`, `public-dhcp.png`에 보관한다. 이 배포 이력을 기록하는 후속 문서 커밋은 앱 코드·빌드 산출물을 변경하지 않는다.
