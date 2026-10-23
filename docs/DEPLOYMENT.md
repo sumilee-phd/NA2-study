@@ -1,5 +1,34 @@
 # 공개 배포 검증
 
+## 실기 24문항·글꼴 업데이트 공개 검증
+
+검증일: 2026-10-23 13시대 (한국시간). 사용자의 공개 배포 승인 후 `sumilee-phd/NA2-study`의 `main`을 갱신했습니다.
+
+- 기능·스타일 변경 커밋: `a4ebbe1d0158f14c6fafbb4f5bddf3ebef8f3e2b`.
+- [자동 검사 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/39898428728).
+- [Pages 배포 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/39898428826). Ubuntu·Node.js 22에서 81개 테스트 통과, 실패 0개, 빌드 성공을 로그로 확인했습니다.
+- 실제 접속 주소: <https://sumilee-phd.github.io/NA2-study/>.
+
+| 공개 사이트 점검 | 실제 확인 결과 |
+|---|---|
+| 버전·메뉴 | 통합 학습판 02, 상위 실기 메뉴와 작업형·실습형·단답형/객관식 하위 메뉴 표시 |
+| 제목·본문 | 제목 Gmarket Sans Bold 700, 본문 Paperlogy Regular. 웹폰트 3개가 공개 주소의 `/NA2-study/assets/` 경로에서 관측됨 |
+| 선택 색상 | T568B 선택 탭이 hover 상태에서도 흰색 글자, `#103b37` 배경·테두리 유지 |
+| 24문항 | PRAC-001부터 PRAC-024까지 개별 시작 버튼 확인 |
+| 단답형 | PRAC-001에서 오답 제출 → 해설 확인 → 새로고침 후 답안·판정 복원 |
+| 오답 복습 | PRAC-001 재풀이 정답 → 복습 목록 0건, 이전 오답과 재풀이 정답 모두 학습 기록에 유지 |
+| 단일 선택 | PRAC-009에서 D(16384개) 선택 → 정답과 해설 표시 |
+| 복수 선택 | PRAC-018에서 D·A·C 순서로 선택 → 정답과 해설 표시 |
+| 저장 | 총 4회 제출 기록이 새로고침 후에도 복원됨 |
+| 모바일 | 360×800 화면에서 복수 선택·해설·학습 기록 표시 확인, 페이지 가로 넘침 없음 |
+| 콘솔 | 위 공개 화면의 오류·경고 0건 |
+
+공개 검수는 Windows Chromium 기반 브라우저에서 수행했습니다. 모바일은 화면 크기 모의 검수이며 실제 스마트폰·Safari 실기기 검수는 아닙니다. 공개 사이트에서는 세 유형의 대표 문항과 저장 흐름을 확인했으며, 24문항 전체의 브라우저 채점은 앞선 로컬 기능 검수 결과를 따릅니다. 검수용 답안은 해당 검수 브라우저에만 저장되었습니다. 기존 학습센터의 이론 읽음 1건도 유지됐습니다.
+
+공개 화면 증빙은 로컬 `verification/public-update-20261023/`에 보관합니다: `01-live-home.png`, `02-live-multiple-mobile.png`, `03-live-history-restored.png`, `04-live-hover-fixed.png`. 글꼴 라이선스는 `.gitattributes`로 원문 공백·줄바꿈을 보존하며, 원본 파일과 Git blob의 바이트 일치를 확인했습니다.
+
+## 최초 공개 검증 기록
+
 검증일: 2026-10-23 (한국시간)
 
 - 공개 사이트: https://sumilee-phd.github.io/NA2-study/
