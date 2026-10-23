@@ -2,6 +2,10 @@
 
 네트워크관리사 2급 이론·필기 문제풀이·실기 케이블링을 연결하는 별도 React 학습 앱입니다.
 
+- 공개 사이트: https://sumilee-phd.github.io/NA2-study/
+- 소스 리포: https://github.com/sumilee-phd/NA2-study
+- `127.0.0.1` 주소는 개발 PC의 로컬 미리보기입니다. 다른 기기에서는 공개 사이트를 이용합니다.
+
 ## 기준 버전과 독립성
 
 기존 `sumilee-phd/NA2-com`의 `7e0c035d8f49063ae51e5715bb5dd9062487da20`, `sumilee-phd/NA2-cabling`의 `8036a544085cf96f52e535bda8ebd8c14c86031b`를 원본 기준으로 고정합니다. 이 프로젝트만 확장하며 기존 리포·배포·저장 기록을 수정하지 않습니다. [기준 파일과 SHA-256](docs/BASELINES.json)을 기록했습니다.
@@ -25,7 +29,7 @@ npm run build
 npm run preview
 ```
 
-기본 로컬 주소는 `/`이며 GitHub Actions에서는 저장소명으로 기본 경로를 정합니다. `BASE_PATH=/NA2-study/`를 지정하면 동일한 하위 경로에서 미리 볼 수 있습니다. GitHub Pages 배포 워크플로는 수동 실행용으로 제공하며, 저장소 공개와 배포는 별도 승인 후 실행합니다.
+기본 로컬 주소는 `/`이며 GitHub Actions에서는 저장소명으로 기본 경로를 정합니다. `BASE_PATH=/NA2-study/`를 지정하면 동일한 하위 경로에서 미리 볼 수 있습니다. `main` 브랜치에 푸시하면 테스트·빌드 성공 후 GitHub Pages로 자동 배포됩니다. Actions의 `Deploy Pages`에서 수동으로 다시 실행할 수도 있습니다.
 
 ## 기록
 
