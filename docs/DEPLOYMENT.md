@@ -71,3 +71,13 @@ GitHub의 Ubuntu·Node.js 22 환경에서 의존성 설치, 58개 테스트, Vit
 공개 브라우저에서 8개 과제 목록을 확인했다. 메인 번들 `index-BAnhN6dL.js`는 `/NA2-study/` 경로로 로컬 검수한 빌드와 동일한 이름이다. DHCP 과제에서 `/25`, 제외 범위 `.1~.10`, 임대 6시간, 후보 첫 주소 `.11`, 후보 수 116을 입력하여 6/6 일치 판정을 확인했다. 새로고침 후 입력·판정이 유지됐고 목록 진행률은 1/8이었다. 공개 검수 탭의 error·warn 로그는 없었다.
 
 로컬에서는 8과제의 44항목 입력 판정과 8/8 진행률, 360px 모바일 화면, 기존 필기·케이블링·실기 문제풀이 연결을 확인했다. 자세한 범위와 한계는 [실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md)를 따른다. 공개 증거 이미지는 Git 제외 폴더 `verification/practical-labs-20261023/public-labs.png`, `public-dhcp.png`에 보관한다. 이 배포 이력을 기록하는 후속 문서 커밋은 앱 코드·빌드 산출물을 변경하지 않는다.
+
+## 2026-10-23 라우터 실습 자료의 ICQA 데모 검증 반영
+
+- 배포 코드: [`eeacba6d603eb331151cfee6d75ac79384c7e725`](https://github.com/sumilee-phd/NA2-study/commit/eeacba6d603eb331151cfee6d75ac79384c7e725)
+- [자동 검증 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/39942168881): Ubuntu·Node.js 22에서 97개 테스트 통과, 빌드 통과.
+- [Pages 배포 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/39942168887): 2026-10-23 19:53 KST 완료. 배포용 빌드에서도 97개 테스트 통과.
+
+ICQA 라우터 시험 데모에서 거부된 `show ip interface brief`를 `show running-config`·`show interfaces`로 바꾸고, `no shutdown` 반복 입력 시 비활성화되는 데모 동작과 데모 확인 범위를 라우터 과제에 반영했다. 검증 내용은 [실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md#icqa-에뮬레이터-직접-검증)를 따른다.
+
+공개 주소에서 새 메인 번들 `index-CvhVFOPz.js`와 실습 번들 `PracticalLabs-BTyGuto9.js`를 확인했다. 라우터 4개 과제의 새 명령·데모 확인 노트·검토 범위 문구, Windows 과제의 기존 한계 문구를 확인했다. router-interface에서 5/5 일치 판정 후 새로고침해도 입력·판정이 유지되었고 목록 진행률은 1/8이었다. 공개 검수 탭의 콘솔 로그는 없었다. 검수 입력은 해당 검수 브라우저에만 저장되었다. 공개 화면 증거는 Git 제외 폴더 `verification/emulator-20261023/public/`에 보관한다.
