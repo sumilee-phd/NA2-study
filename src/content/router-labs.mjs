@@ -63,7 +63,9 @@ const saveCheck = (id) => ({
   explanation: 'copy running-config startup-config는 현재 실행 설정을 시작 설정으로 복사합니다. 조회 화면의 출력 내용을 저장하는 명령은 아닙니다.',
 });
 
-const executionNote = '공식 문서와 설정값을 대조한 실습 자료입니다. 이 화면은 IOS 명령을 실행하거나 장비 상태를 자동 채점하지 않습니다. 작성 과정에서 ICQA 프로그램과 실제 라우터를 실행하지 않았으므로 사용 중인 버전의 명령 지원 여부는 별도로 확인하세요.';
+const executionNote = '공식 문서와 설정값을 대조한 실습 자료입니다. 이 화면은 IOS 명령을 실행하거나 장비 상태를 자동 채점하지 않습니다. 2026-10-23 ICQA 자료실 router.zip의 라우터 시험 데모(router.exe 1.0.0.0)에서 명령 수락·조회·저장을 직접 확인했습니다. 데모는 답안 제출 후 점수를 표시하지 않으므로 협회 채점 결과와 같다는 의미는 아닙니다. 데모 콘솔에는 붙여넣기 입력이 반영되지 않아 명령을 직접 입력했습니다.';
+
+const demoNote = detail => `ICQA 라우터 시험 데모 확인(2026-10-23): ${detail}`;
 
 export const ROUTER_LABS = [
   {
@@ -140,7 +142,7 @@ export const ROUTER_LABS = [
     solution: [
       {
         title: '전체 명령 순서',
-        body: 'Router>에서 시작하는 예입니다. 프롬프트 자체는 입력하지 않습니다. 저장 대상 질문이 나타나면 Enter로 startup-config를 선택한 뒤 마지막 조회 명령을 입력하세요.',
+        body: 'Router>에서 시작하는 예입니다. 프롬프트 자체는 입력하지 않습니다. 저장 대상 질문이 나타나면 Enter로 startup-config를 선택한 뒤 마지막 조회 명령을 입력하세요. ICQA 데모에서는 en, conf t, copy r s, sh start 같은 축약형도 수락되었습니다.',
         commands: [
           'enable',
           'configure terminal',
@@ -155,12 +157,14 @@ export const ROUTER_LABS = [
     pitfalls: [
       { title: '조회와 저장을 섞지 마세요', body: 'show running-config는 설정을 화면에 표시합니다. copy running-config startup-config는 현재 설정을 시작 설정으로 복사합니다. show 명령의 화면 출력을 복사하는 과정이 아닙니다.' },
       { title: '이름이 바뀌어도 모드는 따로 확인하세요', body: 'LAB-R1(config)#와 LAB-R1#는 서로 다른 모드입니다. 이름이 바뀌었다는 사실만으로 저장까지 끝난 것은 아닙니다.' },
+      { title: '저장은 copy 명령으로 하세요', body: 'ICQA 라우터 시험 데모의 안내는 startup-config 저장에 copy running-config startup-config 또는 copy r s만 사용하도록 하고, write 명령은 동작하지 않는다고 명시합니다.' },
     ],
     sourcePages: [281],
     sourceNotes: [
       '사용자 제공 2024 교재 PDF 281쪽의 호스트 이름·저장 과제를 참고하여 이름, 안내, 점검 문항을 자체 작성했습니다. 교재 스캔 화면은 포함하지 않았습니다.',
       'ICQA 자료실은 수험생용 공식 도구의 안내 근거입니다. 이 자체 과제가 공식 기출문제이거나 협회 채점과 동일하다는 의미는 아닙니다.',
       executionNote,
+      demoNote('전체 명령 순서가 모두 수락되었습니다. hostname 입력 직후 프롬프트가 LAB-R1(config)#로 바뀌었고, copy 실행 시 Destination filename [startup-config]? 질문 뒤 Enter로 Building configuration...[OK]가 표시되었습니다. show running-config와 show startup-config 모두에서 hostname LAB-R1을 확인했습니다.'),
     ],
     sources: [S.icqa, S.cli, S.configuration],
     relatedTheory: ['devices-switch-router'],
@@ -176,7 +180,7 @@ export const ROUTER_LABS = [
       '인터페이스 설정 모드에서 주소와 no shutdown을 적용합니다.',
       '주소·상태 조회 후 시작 설정에 저장합니다.',
     ],
-    environment: 'FastEthernet0/0이라는 라우팅용 인터페이스가 제공되는 독립 연습 장비를 가정합니다. 연결 상대와 케이블은 준비되어 있으며 주소 중복은 없습니다. 실제 장비가 GigabitEthernet0/0 또는 다른 이름을 쓰면 show ip interface brief로 이름을 확인하고 과제 장비에 맞게 바꿔야 합니다. 모든 기기에 FastEthernet0/0이 있다는 뜻은 아닙니다.',
+    environment: 'FastEthernet0/0이라는 라우팅용 인터페이스가 제공되는 독립 연습 장비를 가정합니다. ICQA 라우터 시험 데모의 기본 설정에도 FastEthernet0/0이 있습니다. 연결 상대와 케이블은 준비되어 있으며 주소 중복은 없습니다. 다른 장비가 GigabitEthernet0/0 등 다른 이름을 쓰면 show running-config 또는 show interfaces로 이름을 확인하고 과제 장비에 맞게 바꿔야 합니다. ICQA 데모는 시작 화면에 Gigabit Ethernet을 표시하지만 GigabitEthernet0/0 입력을 거부했으므로, 시작 화면이 아닌 설정 목록으로 포트 이름을 확인하세요.',
     scenario: 'FastEthernet0/0을 192.168.10.0/26 네트워크의 첫 사용 가능한 호스트 주소로 설정하고 관리상 비활성화를 해제하세요. 주소와 상태를 조회한 뒤 설정을 저장하세요.',
     requirements: [
       { label: '과제 인터페이스', value: 'FastEthernet0/0' },
@@ -188,9 +192,9 @@ export const ROUTER_LABS = [
     steps: [
       {
         title: '포트와 주소 범위를 확인하세요',
-        body: '특권 EXEC 모드에서 인터페이스 목록을 읽습니다. 과제 포트가 있는지 확인하고 /26의 마스크와 첫 호스트 주소를 계산하세요.',
-        commands: ['enable', 'show ip interface brief'],
-        check: 'FastEthernet0/0의 존재와 현재 IP-Address, Status, Protocol을 확인합니다.',
+        body: '특권 EXEC 모드에서 현재 설정의 interface 목록을 읽습니다. 과제 포트가 있는지 확인하고 /26의 마스크와 첫 호스트 주소를 계산하세요.',
+        commands: ['enable', 'show running-config'],
+        check: 'interface FastEthernet0/0 항목과 그 아래의 ip address·shutdown 행을 확인합니다. Cisco IOS의 show ip interface brief는 ICQA 데모에서 Invalid input으로 거부되었습니다.',
       },
       {
         title: '인터페이스 설정 모드로 이동하세요',
@@ -200,15 +204,15 @@ export const ROUTER_LABS = [
       },
       {
         title: '관리상 비활성화를 해제하세요',
-        body: 'IP 주소를 설정한 후 no shutdown을 입력합니다. 이 명령만으로 케이블이나 상대 장비 문제까지 해결되는 것은 아닙니다.',
+        body: 'IP 주소를 설정한 후 no shutdown을 한 번 입력합니다. ICQA 데모에서는 같은 인터페이스에 no shutdown을 다시 입력하면 메시지 없이 비활성화 상태로 돌아갔습니다. 이 명령만으로 케이블이나 상대 장비 문제까지 해결되는 것은 아닙니다.',
         commands: ['no shutdown', 'end'],
-        check: '특권 EXEC 모드로 돌아왔는지 확인합니다.',
+        check: 'changed state to up 메시지를 확인한 뒤 같은 명령을 반복하지 않고, 특권 EXEC 모드로 돌아왔는지 확인합니다.',
       },
       {
         title: '주소·마스크·링크 상태를 조회하세요',
-        body: 'brief 출력에서 주소와 상태를 확인하고, running-config의 해당 인터페이스 항목에서 마스크를 확인합니다. Status와 Protocol이 up인지 따로 읽으세요.',
-        commands: ['show ip interface brief', 'show running-config'],
-        check: 'administratively down은 관리상 비활성화 상태입니다. no shutdown 후에도 down이면 연결 상대와 케이블 등 실제 환경을 확인해야 합니다.',
+        body: 'show interfaces의 첫 줄에서 관리 상태와 회선 프로토콜 상태를 따로 읽고, Internet address 행에서 주소와 마스크를 확인합니다. running-config의 해당 인터페이스 항목에 shutdown 행이 없는지도 확인하세요.',
+        commands: ['show interfaces', 'show running-config'],
+        check: 'administratively down은 관리상 비활성화 상태입니다. ICQA 데모에서는 no shutdown 후 FastEthernet0/0 is up, line protocol is down (disabled)으로 표시되었습니다. 실제 장비에서 회선 프로토콜이 down이면 연결 상대와 케이블 등 실제 환경을 확인해야 합니다.',
       },
       {
         title: '시작 설정을 저장하세요',
@@ -258,16 +262,16 @@ export const ROUTER_LABS = [
     solution: [
       {
         title: '주소 계산과 전체 명령',
-        body: '블록 크기는 64개 주소입니다. 이 블록의 호스트 범위는 192.168.10.1~192.168.10.62입니다. 아래 명령은 FastEthernet0/0이 제공되는 과제 환경을 기준으로 합니다.',
+        body: '블록 크기는 64개 주소입니다. 이 블록의 호스트 범위는 192.168.10.1~192.168.10.62입니다. 아래 명령은 FastEthernet0/0이 제공되는 과제 환경을 기준으로 하며, no shutdown은 한 번만 입력합니다.',
         commands: [
           'enable',
-          'show ip interface brief',
+          'show running-config',
           'configure terminal',
           'interface FastEthernet0/0',
           'ip address 192.168.10.1 255.255.255.192',
           'no shutdown',
           'end',
-          'show ip interface brief',
+          'show interfaces',
           'show running-config',
           'copy running-config startup-config',
           'show startup-config',
@@ -276,14 +280,16 @@ export const ROUTER_LABS = [
     ],
     pitfalls: [
       { title: 'IP 설정과 포트 활성화는 다릅니다', body: '주소를 입력했다고 shutdown 상태가 자동으로 해제된다고 가정하지 마세요. 주소·마스크·관리 상태를 각각 확인합니다.' },
-      { title: 'brief 출력만으로 마스크를 확인하지 마세요', body: 'show ip interface brief는 주로 주소와 상태를 간단히 보여 줍니다. 이 절차에서는 show running-config의 ip address 행으로 마스크도 확인합니다.' },
-      { title: '인터페이스 이름을 그대로 적용하지 마세요', body: 'FastEthernet0/0은 이 과제의 장비 조건입니다. 실제 장비의 포트 이름과 라우팅 기능 지원 여부는 먼저 확인해야 합니다.' },
+      { title: 'no shutdown을 반복하지 마세요', body: 'Cisco IOS에서 no shutdown은 비활성화를 해제하는 명령입니다. 그러나 ICQA 데모에서는 두 번째 입력이 메시지 없이 인터페이스를 administratively down으로 되돌렸고, 세 번째 입력에서 다시 up이 되었습니다. 입력 후 running-config에 shutdown 행이 없는지 확인합니다.' },
+      { title: '데모가 지원하는 조회 명령을 쓰세요', body: 'ICQA 데모는 show ip interface brief를 Invalid input으로 거부했습니다. show interfaces의 Internet address 행이나 show running-config의 ip address 행에서 주소와 마스크를 확인합니다. 실제 IOS 장비에서는 brief 출력으로 주소와 상태를 간단히 볼 수 있습니다.' },
+      { title: '인터페이스 이름을 그대로 적용하지 마세요', body: 'FastEthernet0/0은 이 과제와 ICQA 데모의 포트 이름입니다. 다른 장비의 포트 이름과 라우팅 기능 지원 여부는 먼저 확인해야 합니다.' },
     ],
     sourcePages: [291, 297],
     sourceNotes: [
       '사용자 제공 2024 교재 PDF 291쪽의 인터페이스 활성화와 297쪽의 IPv4 설정 유형을 참고했습니다. 포트 조건과 사설 주소를 새로 정해 작성했으며 스캔 이미지는 포함하지 않았습니다.',
       'Cisco 문서의 ip address, no shutdown, show ip interface brief 절차를 대조했습니다. 문서에 제시된 기종의 포트 이름을 ICQA 도구의 고정 사양으로 간주하지 않았습니다.',
       executionNote,
+      demoNote('기본 설정의 인터페이스는 FastEthernet0/0, FastEthernet1/0, Serial2/0, Serial3/0이었습니다. interface FastEthernet0/0, ip address 192.168.10.1 255.255.255.192, no shutdown과 저장이 수락되었고, show startup-config에 주소와 마스크가 남았습니다. interface GigabitEthernet0/0과 show ip interface brief는 Invalid input으로 거부되었습니다. no shutdown 반복 시 비활성화와 활성화가 번갈아 바뀌는 동작은 두 차례 재현했습니다.'),
     ],
     sources: [S.icqa, S.interfaces, S.configuration],
     relatedTheory: ['devices-switch-router', 'tcpip-subnetting'],
@@ -299,7 +305,7 @@ export const ROUTER_LABS = [
       '전역 설정 모드에서 정적 경로를 작성합니다.',
       '설정 내용, 실제 라우팅 테이블, 시작 설정을 각각 확인합니다.',
     ],
-    environment: '두 연습 라우터 R1·R2의 IP 라우팅이 활성화되어 있고 연결 구간은 up 상태라고 가정합니다. R1의 연결 주소는 10.0.12.1/30, R2는 10.0.12.2/30입니다. R1의 LAN은 192.168.10.0/24, R2의 LAN은 192.168.20.0/24이며 R2의 반환 경로는 미리 설정되어 있습니다. 이번 과제에서는 R1만 설정합니다.',
+    environment: '두 연습 라우터 R1·R2의 IP 라우팅이 활성화되어 있고 연결 구간은 up 상태라고 가정합니다. R1의 연결 주소는 10.0.12.1/30, R2는 10.0.12.2/30입니다. R1의 LAN은 192.168.10.0/24, R2의 LAN은 192.168.20.0/24이며 R2의 반환 경로는 미리 설정되어 있습니다. 이번 과제에서는 R1만 설정합니다. ICQA 라우터 시험 데모에서는 이 전제가 성립하지 않았습니다. 두 라우터의 Serial2/0에 연결 주소를 설정해도 down으로 표시되었고 show ip route에는 경로가 나타나지 않았으므로, 데모에서는 설정 행과 시작 설정 저장까지 확인합니다.',
     scenario: 'R1이 192.168.20.0/24로 향하는 패킷을 연결 상대 R2로 전달하도록 정적 경로를 추가하고, 조회·저장을 완료하세요.',
     requirements: [
       { label: '설정할 장비', value: 'R1' },
@@ -318,7 +324,7 @@ export const ROUTER_LABS = [
       {
         title: '기존 경로와 연결 상태를 확인하세요',
         body: 'R1에서 연결망과 인터페이스 상태를 읽습니다. 같은 목적지에 이미 다른 경로가 있는지 확인하세요.',
-        commands: ['enable', 'show ip interface brief', 'show ip route'],
+        commands: ['enable', 'show interfaces', 'show ip route'],
         check: '이 과제의 연결망 10.0.12.0/30과 연결 상대 10.0.12.2에 도달할 조건을 확인합니다.',
       },
       {
@@ -331,7 +337,7 @@ export const ROUTER_LABS = [
         title: '설정 내용과 사용 중인 경로를 대조하세요',
         body: 'end로 돌아온 뒤 running-config의 ip route 행과 라우팅 테이블을 각각 확인합니다. 이 과제 조건에서 목적지 /24와 다음 홉이 맞는 정적 경로를 찾으세요.',
         commands: ['end', 'show running-config', 'show ip route'],
-        check: '정적 경로의 표시는 S입니다. 설정 행이 있어도 다음 홉으로 가는 유효한 경로가 없으면 사용 중인 라우팅 테이블에 나타나지 않을 수 있습니다.',
+        check: '정적 경로의 표시는 S입니다. 설정 행이 있어도 다음 홉으로 가는 유효한 경로가 없으면 사용 중인 라우팅 테이블에 나타나지 않을 수 있습니다. ICQA 데모의 show ip route는 연결 경로도 표시하지 않았으므로, 데모에서는 running-config의 ip route 행으로 설정을 확인합니다.',
       },
       {
         title: '시작 설정에 경로를 저장하세요',
@@ -379,7 +385,7 @@ export const ROUTER_LABS = [
         body: '목적지 /24는 255.255.255.0이며, 연결 상대 R2의 주소 10.0.12.2를 다음 홉으로 지정합니다. R2와 연결 구간의 사전 설정은 이 과제의 준비 조건입니다.',
         commands: [
           'enable',
-          'show ip interface brief',
+          'show interfaces',
           'show ip route',
           'configure terminal',
           'ip route 192.168.20.0 255.255.255.0 10.0.12.2',
@@ -401,6 +407,7 @@ export const ROUTER_LABS = [
       '사용자 제공 2024 교재 PDF 331쪽의 두 라우터 정적 경로 유형을 참고했습니다. 목적지·연결망·사전 조건을 새로 작성하고 next hop과 목적지를 구분했습니다. 스캔과 원문 문제 화면은 포함하지 않았습니다.',
       'Cisco의 ip route dest-prefix mask next-hop-ip-address 문법 및 show ip route 절차와 대조했습니다.',
       executionNote,
+      demoNote('전역 설정 모드에서 ip route 192.168.20.0 255.255.255.0 10.0.12.2가 수락되었고, running-config와 startup-config에 같은 행이 남았습니다. 두 라우터의 Serial2/0에 10.0.12.1/30과 10.0.12.2/30을 설정하고 no shutdown을 입력해도 changed state to down으로 표시되었습니다. show ip route에는 연결 경로와 정적 경로가 모두 나타나지 않아 라우팅 테이블 등록과 패킷 전달은 확인하지 못했습니다.'),
     ],
     sources: [S.icqa, S.routing, S.interfaces, S.configuration],
     relatedTheory: ['devices-switch-router', 'tcpip-subnetting'],
@@ -539,6 +546,7 @@ export const ROUTER_LABS = [
       '사용자 제공 2024 교재 PDF 289~291쪽의 VTY 비밀번호·유휴 시간·콘솔 비밀번호 유형을 참고했습니다. 과제 조건과 비밀번호, 제한 시간은 새로 정했습니다. 스캔 이미지는 포함하지 않았습니다.',
       'exec-timeout의 minutes [seconds] 순서와 라인 설정 모드, VTY의 원격 접속 역할을 Cisco 공식 문서로 대조했습니다. Telnet 유형을 실제 운영의 SSH 권고와 구분했습니다.',
       executionNote,
+      demoNote('기본 설정에는 line con 0, line aux 0, login이 포함된 line vty 0 4가 있었습니다. line console 0과 line vty 0 4에서 (config-line)# 프롬프트를 확인했고, password ? 도움말은 7(숨김 형식)과 LINE(평문) 입력 형식을 표시했습니다. exec-timeout 5 30이 수락되어 running-config와 startup-config의 line vty 0 4 아래에 남았습니다. 연습용 비밀번호 문자열과 콘솔 login 입력, 실제 인증과 유휴 종료 동작은 이번 검증에서 실행하지 않았습니다.'),
     ],
     sources: [S.icqa, S.cli, S.timeout, S.security, S.configuration],
     relatedTheory: ['devices-switch-router'],

@@ -52,4 +52,58 @@
 - 모바일: 브라우저 360×800 viewport에서 목록과 정적 경로 상세/입력 확인. 문서 폭 345px, scrollWidth 345px로 페이지 가로 넘침 없음. 실제 휴대전화 검사는 아님.
 - 독립 소스 리뷰: 빈 답 44항목, 8개 상세 경로, 끝 슬래시, 잘못된 ID·상속 속성 이름·추가 하위 경로 거부 및 평가/저장 연결 확인. 해결되지 않은 결함을 발견하지 못했다.
 
-로컬 화면 증거는 Git에서 제외하는 `verification/practical-labs-20261023/`에 보관한다. 실제 Windows Server·ICQA 프로그램·Cisco 라우터를 설치하거나 실행하지 않았으며, 에뮬레이터의 지원 명령과 실제 실행·채점 결과는 이번 검증 범위에 포함하지 않는다.
+로컬 화면 증거는 Git에서 제외하는 `verification/practical-labs-20261023/`에 보관한다. 위 결과는 웹앱·콘텐츠 검증이다. ICQA 라우터 시험 데모의 직접 검증은 아래 절에 따로 기록하며, 실제 Windows Server와 Cisco 장비는 실행하지 않았다.
+
+## ICQA 에뮬레이터 직접 검증
+
+검증일: 2026-10-23 19:24~19:40 (한국시간). Windows 11 PC에서 Claude 데스크톱 앱의 화면 제어 도구로 실제 프로그램 창을 조작하고 출력을 읽었다. 앞 절의 웹앱 입력 판정은 이 검증으로 취급하지 않는다.
+
+### 프로그램과 실행 방식
+
+- 라우터: [ICQA 자료실 21](https://www.icqa.or.kr/cn/board/dataroom/21)의 `router.zip`(22,525,867바이트)에서 푼 `router.exe`. 파일 버전 1.0.0.0, 제품명 표기 없음. 창 제목은 "라우터 시뮬레이터"에서 시작 후 "라우터 실기"로 바뀐다. 시험 데모 1종(20분, 3문항, ROUTER1·ROUTER2 활성, ROUTER3·4 비활성)만 제공한다.
+- 1차 실행에서는 앱의 4개 라우터 과제를 ROUTER1·ROUTER2 콘솔에서 시험했다. 앱 설정이 섞이지 않도록 프로그램을 다시 실행한 2차 실행에서 공식 3문항만 전체 명령으로 수행하고 답안을 제출했다.
+- 데모 안내문은 "실제 라우터의 화면이나 구성요소가 다르거나 제한적"이라고 밝히고, startup-config 저장에는 `copy running-config startup-config` 또는 `copy r s`만 쓰며 `write`는 동작하지 않는다고 명시한다.
+- Windows: [ICQA 자료실 18](https://www.icqa.or.kr/cn/board/dataroom/18)의 `icqaControlSetup64.msi`(7.3MB, 첨부 2024-04-05, .NET Framework 3.5 필요)는 이 PC에 설치 기록과 설치 파일이 없었다. .NET Framework 3.5 SP1 설치만 확인했다. 내려받기·설치에는 사용자 승인이 필요하여 실행하지 않았다.
+- [출제기준 변경 공지](https://www.icqa.or.kr/cn/board/notice/463)는 2026-10-23 재확인 결과 2025-01-13 게시 내용 그대로이다: 2025-08-01부터 Windows Server 2022 출제, 실기 에뮬레이터는 기존 방식 유지.
+
+### 과제별 판정
+
+| 과제 | 실제 조건과 앱 예제의 차이 | 관찰 결과 | 판정 |
+|---|---|---|---|
+| windows-ipv4 | — | ICQA Windows 실습용 에뮬레이터 미설치 | 환경 미준비 |
+| windows-dhcp | — | 같음 | 환경 미준비 |
+| windows-dns-records | — | 같음 | 환경 미준비 |
+| windows-dns-soa | — | 같음 | 환경 미준비 |
+| router-basics | 공식 문제 1은 ROUTER2의 `ICQA`. 앱 예제 `LAB-R1`은 ROUTER1에 연습으로 설정 | 7개 명령 모두 수락. `LAB-R1(config)#`·`LAB-R1#` 프롬프트, `Destination filename [startup-config]?` 뒤 Enter로 `Building configuration...[OK]`, running·startup 모두 `hostname LAB-R1` | 통과 |
+| router-interface | 공식 문제 3은 FastEthernet 0/0에 192.168.0.100/24. 앱 예제는 192.168.10.1/26 | 기본 설정 인터페이스는 Fa0/0·Fa1/0·S2/0·S3/0. `interface FastEthernet0/0`, `ip address 192.168.10.1 255.255.255.192`, `no shutdown`, 저장 수락, startup에 주소·마스크 유지. `show interfaces`는 `FastEthernet0/0 is up, line protocol is down (disabled)`. 앱 절차의 `show ip interface brief`는 Invalid input | 수정 후 통과(설정·저장). 링크 up/up은 데모에서 미성립 |
+| router-route | 앱 전제(연결 구간 up, R2 반환 경로)가 데모에서 성립하지 않음 | 전역 설정에서 `ip route 192.168.20.0 255.255.255.0 10.0.12.2` 수락, running·startup에 같은 행. 두 라우터 Serial2/0에 10.0.12.1/30·10.0.12.2/30과 `no shutdown`을 넣어도 `changed state to down`. `show ip route`는 코드 범례와 `Gateway of last resort is not set`만 표시 | 수정 후 통과(설정·저장). 경로 등록·패킷 전달은 도구 미지원 |
+| router-access | — | 기본 설정에 `line con 0`, `line aux 0`, `login`이 있는 `line vty 0 4`. `line console 0`·`line vty 0 4`에서 `(config-line)#`, `password ?`는 `7`과 `LINE` 형식 표시. `exec-timeout 5 30` 수락, running·startup의 vty 아래 유지 | 일부 통과. 비밀번호 문자열·콘솔 `login` 입력과 인증·유휴 종료는 미실행 |
+
+공식 데모 3문항(2차 실행): ROUTER2 `enable` → `configure terminal` → `hostname ICQA` → `end` → `copy running-config startup-config`, ROUTER1 `enable` → `configure terminal` → `interface FastEthernet0/0` → `ip address 192.168.0.100 255.255.255.0` → `no shutdown` 1회 → `end` → `copy running-config startup-config`를 모두 `[OK]`까지 확인하고 제출했다. 제출 후 화면은 "수고하셨습니다."와 "처음으로"뿐이며 점수·문항별 정오를 표시하지 않는다. 따라서 **데모 자체 채점 결과는 확인할 수 없다(도구 미지원)**. 1차 실행에서는 ROUTER2의 `en`·`conf t`·`hostname ICQA`·`copy r s`·`sh start`로 시작 설정에 `hostname ICQA`가 저장되는 것을 따로 확인했다.
+
+### 발견한 데모 동작과 앱 수정
+
+1. `show ip interface brief`와 `show ip interface ?`는 `% Invalid input detected`로 거부되었다. `show ip ?` 도움말에는 `interface`가 표시되지만 실행되지 않는다. → router-interface의 1·4단계와 풀이, router-route의 2단계와 풀이에서 `show running-config`·`show interfaces`로 교체했다. 수정 전 콘텐츠에는 이 명령이 6곳 있었다.
+2. 시작 배너는 `CISCO1921/K9`, `2 Gigabit Ethernet interfaces`를 표시하지만 `interface GigabitEthernet0/0`은 거부되고 설정 목록은 FastEthernet·Serial이다. → 앱 예제의 FastEthernet0/0은 데모와 일치하므로 유지하고, 포트 이름은 배너가 아닌 설정 목록으로 확인하도록 환경 설명을 고쳤다.
+3. 같은 인터페이스에 `no shutdown`을 반복하면 두 번째 입력이 메시지 없이 `administratively down`으로 되돌리고, 세 번째 입력은 다시 `changed state to up`을 표시했다(두 차례 재현). → 한 번만 입력하고 running-config에 `shutdown` 행이 없는지 확인하도록 절차·풀이·주의점에 추가했다. [참고 검수 문서](PRACTICAL_REFERENCE_REVIEW.md)의 확인 보류 항목도 갱신했다.
+4. 연결 구간이 올라오지 않고 `show ip route`에 연결 경로도 나타나지 않는다. → router-route 환경·확인 문구에 데모에서는 설정 행과 저장까지만 확인한다고 명시했다.
+5. 데모 안내의 저장 명령 제한(`write` 불가) → router-basics 주의점에 추가했다. `en`, `conf t`, `int fa0/0`, `copy r s`, `sh start` 축약형 수락은 풀이 설명과 출처 노트에 기록했다.
+6. 모든 라우터 과제의 출처 노트에서 "ICQA 프로그램을 실행하지 않았다"는 문장을 실제 확인 범위로 바꾸고, 과제별 데모 확인 결과를 추가했다. 과제 상세의 검토 범위 문구는 Windows·라우터 묶음별로 나누었다. 점검 항목 ID와 기준값은 바꾸지 않아 기존 학습 기록과 호환된다.
+
+기타 관찰(앱 수정 없음): `?` 도움말 뒤에도 입력 줄에 `?`가 남아 지우고 입력해야 한다. `-- MORE --`는 Space로 넘기고 `q`로 멈춘다. 설정을 바꿔도 `Current configuration : 547 bytes` 표시는 바뀌지 않았다. 자동 입력 도구가 보낸 붙여넣기 입력은 콘솔에 반영되지 않아 모든 명령을 한 단어씩 직접 입력했다.
+
+### 수정 후 확인
+
+- `npm test`: 기존 96개와 데모 제약 회귀 테스트 1개, **총 97개 통과**. 새 테스트는 라우터 과제 명령에 데모가 거부한 조회 명령·GigabitEthernet·`write`가 없는지, 명령 묶음마다 `no shutdown`이 한 번 이하인지, 저장 명령과 데모 확인 노트가 있는지 검사한다.
+- `npm run verify:originals`: NA2-com `7e0c035`, NA2-cabling `8036a54`, 추적 파일 42개 SHA-256 일치.
+- `npm run build`: 한글이 포함된 로컬 작업 경로에서는 오류 메시지 없이 `dist/`가 갱신되지 않았다. 추적 파일을 영문 임시 경로로 복사해 같은 명령으로 빌드하여 통과(종료 코드 0)했다. GitHub Actions 빌드는 이 경로 문제와 무관하다.
+- 로컬 브라우저(영문 경로 빌드): router-interface 오답 4/5 → 수정 시 판정 해제 → 5/5 → 새로고침 복원, 라우터 과제 4개의 새 명령·데모 노트·검토 범위 표시, 목록 진행률 1/8, 필기 900문항 로딩과 2026년 2회 1번 선택 유지, 케이블링 유형 판별 평가 중 실습 자료 미표시와 4/4 완료 후 해제, 실기 단답형 PRAC-006 초안 복원·정답 확인, 360×800에서 라우터 상세 4개 가로 넘침 없음, 콘솔 로그 없음.
+
+화면 증거는 Git에서 제외하는 `verification/emulator-20261023/`에 보관한다: `router-run1/`(48장), `router-run2-official/`(9장), `local-regression/`, `SHA256SUMS.txt`.
+
+### 남은 한계
+
+- Windows 4개 과제는 ICQA Windows 실습용 에뮬레이터를 설치하지 않아 실행하지 않았다.
+- 라우터 데모는 공식 데모 3문항만 내장하므로 앱 과제는 같은 콘솔에 연습 설정을 입력해 확인했다. 데모는 채점 결과를 표시하지 않아 협회 채점과의 일치는 확인할 수 없다.
+- 라우터 연결 구간·경로 등록·패킷 전달, 비밀번호 문자열과 콘솔 `login` 입력, 실제 인증과 `exec-timeout` 유휴 종료는 확인하지 못했다.
+- 실제 Cisco 장비와 Windows Server에서의 동작은 이번 검증 범위가 아니다.

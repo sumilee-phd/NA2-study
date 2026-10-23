@@ -87,6 +87,24 @@ test('IPv4 subnet answers agree with independent bitwise network and broadcast c
   assert.equal(value('windows-dhcp', 'lease-hours'), '6');
 });
 
+test('router commands stay within what the ICQA router demo accepted', () => {
+  const rejected = ['show ip interface brief', 'show ip interface'];
+  for (const lab of LABS.filter(item => item.group === 'router')) {
+    const lists = [...lab.steps, ...lab.solution].map(item => item.commands || []).filter(list => list.length);
+    for (const list of lists) {
+      for (const command of list) {
+        assert.ok(!rejected.includes(command), `${lab.id}: ${command}`);
+        assert.ok(!/gigabitethernet/i.test(command), `${lab.id}: ${command}`);
+        assert.ok(!/^write\b/.test(command), `${lab.id}: ${command}`);
+      }
+      assert.ok(list.filter(command => command === 'no shutdown').length <= 1, lab.id);
+    }
+    assert.ok(lab.solution.at(-1).commands.includes('copy running-config startup-config'), lab.id);
+    assert.ok(lab.sourceNotes.some(note => note.startsWith('ICQA 라우터 시험 데모 확인(2026-10-23)')), lab.id);
+  }
+  assert.ok(LAB_BY_ID['router-interface'].solution[0].commands.includes('interface FastEthernet0/0'));
+});
+
 test('lab routes accept only known exact identifiers and reject inherited names', () => {
   for (const lab of LABS) assert.equal(labFromPath(`/practical/lab/${lab.id}`), lab);
   for (const path of ['/practical/lab/constructor', '/practical/lab/__proto__', '/practical/lab/missing', '/practical/lab/windows-ipv4/extra']) assert.equal(labFromPath(path), null);
