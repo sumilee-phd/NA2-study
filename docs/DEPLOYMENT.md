@@ -81,3 +81,15 @@ GitHub의 Ubuntu·Node.js 22 환경에서 의존성 설치, 58개 테스트, Vit
 ICQA 라우터 시험 데모에서 거부된 `show ip interface brief`를 `show running-config`·`show interfaces`로 바꾸고, `no shutdown` 반복 입력 시 비활성화되는 데모 동작과 데모 확인 범위를 라우터 과제에 반영했다. 검증 내용은 [실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md#icqa-에뮬레이터-직접-검증)를 따른다.
 
 공개 주소에서 새 메인 번들 `index-CvhVFOPz.js`와 실습 번들 `PracticalLabs-BTyGuto9.js`를 확인했다. 라우터 4개 과제의 새 명령·데모 확인 노트·검토 범위 문구, Windows 과제의 기존 한계 문구를 확인했다. router-interface에서 5/5 일치 판정 후 새로고침해도 입력·판정이 유지되었고 목록 진행률은 1/8이었다. 공개 검수 탭의 콘솔 로그는 없었다. 검수 입력은 해당 검수 브라우저에만 저장되었다. 공개 화면 증거는 Git 제외 폴더 `verification/emulator-20261023/public/`에 보관한다.
+
+## 2026-10-23 Windows 실습 자료의 ICQA 에뮬레이터 검증 반영
+
+- 배포 코드: [`d09cd400941f163f1937e0cbee65bc80e0cfd6a6`](https://github.com/sumilee-phd/NA2-study/commit/d09cd400941f163f1937e0cbee65bc80e0cfd6a6)
+- [자동 검증 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/39956311836): Ubuntu·Node.js 22에서 98개 테스트 통과, 빌드 통과.
+- [Pages 배포 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/39956311788): 2026-10-23 21:50 KST 완료. 배포용 빌드에서도 98개 테스트 통과.
+
+ICQA Windows 실습용 에뮬레이터에서 확인한 화면 차이(마스크 자동 채움 없음, DHCP·SOA 기본값과 단위, 빈 DNS 영역에서 시작, 명령 프롬프트의 고정 출력, 일련번호 자동 증가 없음)와 과제별 확인 범위를 Windows 과제에 반영했다. 기준값과 점검 항목 ID는 바꾸지 않았다. 검증 내용은 [실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md#icqa-에뮬레이터-직접-검증)를 따른다.
+
+로컬 확인: `npm test` 98개 통과, `npm run verify:originals` 통과(추적 파일 42개 일치). 한글 경로에서는 `vite build`가 메시지 없이 `dist/`를 갱신하지 않아 영문 임시 경로 사본에서 빌드를 통과했다. 그 빌드로 windows-dns-soa 5/6 → 수정 시 판정 해제 → 6/6 → 새로고침 복원, Windows 상세 4개의 새 안내와 에뮬레이터 확인 노트, 필기 900문항 로딩과 답안 유지, 실기 단답형 PRAC-006 초안 복원, 케이블링 평가 중 실습 자료 미표시와 4/4 완료 후 해제, 360×800 가로 넘침 없음, 콘솔 로그 없음을 확인했다.
+
+공개 주소에서 메인 번들 `index-Cl4esbkB.js`와 실습 번들 `PracticalLabs-B5o17QJm.js`를 확인했다. Windows 과제 4개의 에뮬레이터 확인 노트와 검토 범위 문구가 표시되고 이전의 "설치·실행하여 검증한 결과는 아니다" 문구가 사라졌다. 앞선 라우터 배포 때 같은 브라우저에 남긴 router-interface 확인 기록은 갱신 후에도 유지되었다. windows-ipv4에서 6/6 판정 후 새로고침해도 입력·판정이 유지되었고, 공개 검수 탭의 콘솔 로그는 없었다. 공개 화면 증거는 Git 제외 폴더 `verification/emulator-20261023/public/`에 보관한다.
