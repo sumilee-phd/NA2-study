@@ -47,3 +47,17 @@
 .hub-practical-formats p{line-height:1.95}
 @media(max-width:1050px){.hub-practical-card{padding:24px 20px}.hub-practical-card h2{font-size:21px}.hub-practical-grid,.hub-practical-formats{gap:14px}}
 @media(max-width:720px){.hub-practical-grid,.hub-practical-formats,.hub-practical-detail-grid,.hub-practical-detail-grid.is-even{grid-template-columns:1fr;gap:16px}.hub-practical-card{padding:24px}.hub-practical-card-top{margin-bottom:18px}.hub-practical-card h2{font-size:23px}.hub-practical-tags{margin-bottom:18px}.hub-practical-next{display:block;padding:22px;margin-top:24px}.hub-practical-next>.hub-button{margin-top:18px}.hub-practical-next h2{font-size:17px}.hub-practical-pending{display:block;padding:16px}.hub-practical-pending>span{display:block}.hub-practical-pending>.hub-availability{margin-bottom:6px}.hub-practical-lab .hub-button{max-width:100%;text-align:left}}
+
+/* Small real-object photographs beside preparation item headings. */
+.hub-tool-heading{display:flex;align-items:center;gap:16px;min-height:72px;margin-bottom:12px}
+.hub-tool-heading h2{flex:1;min-width:0;margin:0;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}
+.hub-tool-thumbnail{display:flex;align-items:center;justify-content:center;flex:0 0 72px;width:72px;height:72px;background:#fff;border:1px solid var(--hub-line);border-radius:7px;overflow:hidden}
+.hub-tool-thumbnail img{display:block;width:100%;height:100%;object-fit:contain}
+.hub-tool-card>.hub-section-heading{margin-bottom:12px}
+.hub-photo-sources{margin-top:24px;padding-top:16px;border-top:1px solid var(--hub-line);font-size:12px;color:var(--hub-muted);line-height:1.8}
+.hub-photo-sources summary{cursor:pointer;width:fit-content;min-height:44px;padding:10px 0;font-weight:600;color:var(--hub-navy)}
+.hub-photo-sources summary:focus-visible{outline:3px solid var(--hub-green);outline-offset:4px}
+.hub-photo-sources ul{padding-left:20px}
+.hub-photo-sources li{margin:8px 0;overflow-wrap:anywhere}
+.hub-photo-sources a{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:720px){.hub-tool-heading{gap:12px;min-height:64px}.hub-tool-thumbnail{flex-basis:64px;width:64px;height:64px}.hub-tool-heading h2{font-size:18px}.hub-photo-sources{font-size:12px}}
