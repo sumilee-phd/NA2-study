@@ -29,7 +29,8 @@
 .cabling-module { margin: 0; min-width: 320px; min-height: 100vh; background: radial-gradient(ellipse at 80% 0%, #e8f3ec 0, transparent 36rem), #f3f5f2; font-size: 14px; line-height: 1.6; }
 .cabling-module button, .cabling-module input, .cabling-module select { font: inherit; }
 .cabling-module button { min-height: 44px; padding: 8px 14px; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 7px; font-weight: 650; cursor: pointer; transition: background .16s ease, border-color .16s ease; }
-.cabling-module button:hover:not(:disabled) { background: #edf5f0; border-color: #b9d1c4; }
+/* Keep selected tabs and answers legible while the pointer remains on them. */
+.cabling-module button:hover:not(:disabled):where(:not(.selected):not(.chosen)) { background: #edf5f0; border-color: #b9d1c4; }
 .cabling-module button:disabled, .cabling-module fieldset:disabled button { opacity: .48; cursor: not-allowed; }
 .cabling-module button:focus-visible, .cabling-module input:focus-visible, .cabling-module summary:focus-visible, .cabling-module a:focus-visible { outline: 3px solid #54b799; outline-offset: 3px; }
 .cabling-module a { color: var(--green); text-underline-offset: 3px; overflow-wrap: anywhere; }

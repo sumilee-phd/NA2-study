@@ -97,10 +97,10 @@ test('FAQ, tools and guides expose complete reading data and valid topic paths',
   assert.equal(GUIDES.length, 4);
   for (const faq of FAQS) {
     assert.ok([faq.category, faq.question, faq.answer].every(nonempty), faq.id);
-    assert.equal(faq.checkedAt, '2026-10-22');
+    assert.equal(faq.checkedAt, faq.id === 'faq-emulator' ? '2026-10-23' : '2026-10-22');
   }
   for (const tool of TOOLS) assert.ok([tool.name, tool.role, tool.requirement, tool.compatibility, tool.note].every(nonempty), tool.id);
-  const validPaths = new Set(['/learn/theory', '/cabling/pins', ...TOPICS.map((t) => `/learn/theory/${t.id}`)]);
+  const validPaths = new Set(['/learn/theory', '/practical', '/cabling/pins', ...TOPICS.map((t) => `/learn/theory/${t.id}`)]);
   for (const guide of GUIDES) {
     assert.ok([guide.title, guide.audience].every(nonempty), guide.id);
     assert.ok(guide.steps.length >= 3 && guide.steps.every(nonempty), guide.id);

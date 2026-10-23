@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build",
+    "build": "node scripts/prepare-practical-bank.mjs --check && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node scripts/prepare-practical-bank.mjs --check && node --test tests/*.test.mjs",
+    "prepare:practical": "node scripts/prepare-practical-bank.mjs",
     "verify:originals": "node scripts/verify-originals.mjs"
   },
   "dependencies": { "react": "^19.1.0", "react-dom": "^19.1.0" },
