@@ -117,3 +117,15 @@ ICQA 라우터 시험 데모에서 콘솔 재접속 인증은 통과, VTY 원격
 로컬 확인: 작업 폴더에는 이 변경과 무관한 다른 작업의 수정·미추적 파일이 있어, 커밋 대상(HEAD와 이 변경)만 영문 임시 경로 사본에 맞춰 확인했다. 그 사본에서 테스트 99개 통과, `vite build`의 새 `dist/` 산출물과 실습 번들의 새 문구 포함을 확인했다. `npm run verify:originals`도 통과(추적 파일 42개 일치). 이전 확인 때 저장한 router-access 기록이 새 문구에서도 복원되었고, 5/6 → 수정 시 판정 해제 → 6/6 → 새로고침 복원, 360×800 가로 넘침 없음, 콘솔 로그 없음을 확인했다.
 
 공개 주소에서 메인 번들 `index-BbH3DbTo.js`와 실습 번들 `PracticalLabs-Djww1ViK.js`를 확인했다. router-access에 새 확인 노트와 "저장과 프로그램 재실행을 구분하세요" 주의점이 표시되고, VTY 원격 인증·유휴 종료를 이 데모로 확인할 수 없다는 범위가 함께 표시되었다. 이전 "프로그램 재실행 후 보존은 실행하지 않았습니다" 문구는 사라졌다. 같은 브라우저에 앞서 남긴 router-access·router-interface·windows-ipv4 확인 기록이 유지되었고 콘솔 로그는 없었다. 공개 화면 증거는 Git 제외 폴더 `verification/emulator-20261024-auth-restart/public/`에 보관한다.
+
+## 2026-10-24 router-access VTY 원격 인증·유휴 종료(Packet Tracer) 반영
+
+- 배포 코드: [`3d93b3d20d8c6ee691461f9f17103a8494ba8ce0`](https://github.com/sumilee-phd/NA2-study/commit/3d93b3d20d8c6ee691461f9f17103a8494ba8ce0)
+- [자동 검증 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40050505461): Ubuntu·Node.js 22에서 107개 테스트 통과, 빌드 통과.
+- [Pages 배포 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40050505290): 2026-10-24 10:36 KST 완료.
+
+ICQA 라우터 시험 데모가 지원하지 않는 VTY 원격 인증과 `exec-timeout 5 30` 유휴 종료를 Cisco Packet Tracer 9.0.0.0810의 1941 라우터 시뮬레이션에서 실행한 결과를 router-access 환경 설명·5단계·주의점·별도 출처 노트와 [실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md#cisco-packet-tracer-시뮬레이션-검증-router-access-vty-2026-10-24)에 반영했다. ICQA 데모의 확인 노트와 미지원 문구는 그대로 두었고, 과제 ID·점검 항목 ID·정답·저장 구조와 명령은 바꾸지 않았다.
+
+로컬 확인: 별도 작업 사본에서 최신 main(`f901176`) 위로 재배치한 뒤 테스트 107개 통과, 영문 경로 `vite build`의 새 `dist/` 산출물과 메인 번들의 새 노트 포함을 확인했다. `npm run verify:originals`는 원래 작업 폴더에서 통과(추적 파일 42개 일치, 스크립트는 줄 끝 문자 외 동일). 로컬 미리보기에서 router-access 초 값 오답 판정 → 수정 시 판정 해제 → 6/6 → 새로고침 복원, 다른 작업의 실습 그림 표시, 360×800 가로 넘침 없음, 콘솔 로그 없음을 확인했다.
+
+공개 주소에서 메인 번들 `index-DZoxdDuq.js`를 확인했다. router-access에 Packet Tracer 시뮬레이션 노트 1개, 5단계의 시뮬레이션 결과 문장, "유휴 종료는 VTY 세션에서 확인하세요" 주의점이 표시되고, ICQA 데모로 VTY 원격 인증과 유휴 종료를 확인할 수 없다는 문구도 유지되었다. 같은 브라우저에 앞서 남긴 router-interface·windows-ipv4·router-access 기록이 유지되어 router-access는 6/6으로 복원되었다. 360×800 가로 넘침과 콘솔 로그는 없었다. 실행·로컬·공개 화면 증거는 Git 제외 폴더 `verification/vty-lab-20261024-packet-tracer/`(`screens/`, `local/`, `public/`, `RUN.txt`, `SHA256SUMS.txt`)에 보관한다.
