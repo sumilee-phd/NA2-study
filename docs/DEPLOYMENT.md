@@ -105,3 +105,15 @@ ICQA 라우터 시험 데모에서 콘솔·VTY 연습용 비밀번호와 `login`
 로컬 확인: `npm test` 99개 통과, `npm run verify:originals` 통과(추적 파일 42개 일치). 영문 임시 경로 사본에서 `vite build`가 새 `dist/` 산출물을 만들었고, 실습 번들에 2026-10-24 노트가 포함되고 이전 미실행 문구가 빠진 것을 확인했다. 그 빌드로 router-access 5/6 → 수정 시 판정 해제 → 6/6 → 새로고침 복원, 목록 진행률 1/8, 360×800 가로 넘침 없음, 콘솔 로그 없음을 확인했다.
 
 공개 주소에서 메인 번들 `index-E-VTiiDh.js`와 실습 번들 `PracticalLabs-yOa4L7aF.js`를 확인했다. router-access에 2026-10-23·2026-10-24 확인 노트가 표시되고 이전 "비밀번호 문자열과 콘솔 login 입력" 미실행 문구가 사라졌다. 같은 브라우저에 앞서 남긴 router-interface·windows-ipv4 확인 기록은 갱신 후에도 유지되었다. router-access에서 6/6 판정 후 새로고침해도 입력·판정이 유지되었고, 공개 검수 탭의 콘솔 로그는 없었다. 공개 화면 증거는 Git 제외 폴더 `verification/emulator-20261024/public/`에 보관한다.
+
+## 2026-10-24 router-access 인증·원격 접속·재실행 검증 반영
+
+- 배포 코드: [`42e48b71b02a27d620217cc55d628739f0d95b3c`](https://github.com/sumilee-phd/NA2-study/commit/42e48b71b02a27d620217cc55d628739f0d95b3c)
+- [자동 검증 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40046098283): Ubuntu·Node.js 22에서 99개 테스트 통과, 빌드 통과.
+- [Pages 배포 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40046098289): 2026-10-24 09:40 KST 완료. 배포용 빌드에서도 99개 테스트 통과.
+
+ICQA 라우터 시험 데모에서 콘솔 재접속 인증은 통과, VTY 원격 인증과 330초 유휴 종료는 `telnet`·`connect` 미구현으로 도구 미지원, 프로그램 재실행 후에는 새 시험으로 초기화되어 설정이 보존되지 않았다는 결과를 router-access 절차·주의점·확인 노트와 [실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md#router-access-인증유휴-종료재실행-검증-2026-10-24)에 반영했다. 과제 조건·명령·기준값과 ID는 바꾸지 않았다.
+
+로컬 확인: 작업 폴더에는 이 변경과 무관한 다른 작업의 수정·미추적 파일이 있어, 커밋 대상(HEAD와 이 변경)만 영문 임시 경로 사본에 맞춰 확인했다. 그 사본에서 테스트 99개 통과, `vite build`의 새 `dist/` 산출물과 실습 번들의 새 문구 포함을 확인했다. `npm run verify:originals`도 통과(추적 파일 42개 일치). 이전 확인 때 저장한 router-access 기록이 새 문구에서도 복원되었고, 5/6 → 수정 시 판정 해제 → 6/6 → 새로고침 복원, 360×800 가로 넘침 없음, 콘솔 로그 없음을 확인했다.
+
+공개 주소에서 메인 번들 `index-BbH3DbTo.js`와 실습 번들 `PracticalLabs-Djww1ViK.js`를 확인했다. router-access에 새 확인 노트와 "저장과 프로그램 재실행을 구분하세요" 주의점이 표시되고, VTY 원격 인증·유휴 종료를 이 데모로 확인할 수 없다는 범위가 함께 표시되었다. 이전 "프로그램 재실행 후 보존은 실행하지 않았습니다" 문구는 사라졌다. 같은 브라우저에 앞서 남긴 router-access·router-interface·windows-ipv4 확인 기록이 유지되었고 콘솔 로그는 없었다. 공개 화면 증거는 Git 제외 폴더 `verification/emulator-20261024-auth-restart/public/`에 보관한다.
