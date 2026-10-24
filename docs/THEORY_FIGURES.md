@@ -51,3 +51,14 @@
 원본 SHA-256 목록은 [THEORY_SOURCE_HASHES.json](THEORY_SOURCE_HASHES.json)에 기록한다. 검토 원본 비트맵·상세 카탈로그·컨택트시트·화면 증거는 Git 제외 경로 `verification/theory-images-20261024/`에 보관한다.
 
 도해의 확인은 실물 케이블 측정이나 실제 스마트폰 검증을 대신하지 않으며, 이론 10개는 전체 검정 범위를 모두 수록한 상태가 아니다.
+
+## 공개 배포 확인
+
+- 앱 변경 커밋: `7887a170ce4f50b6339dd30e8f99d626ce6fbde1`
+- [자동 검사 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40046187159)
+- [Pages 배포 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40046187201), 2026-10-24 09:41 KST 완료
+- [공개 이론 목록](https://sumilee-phd.github.io/NA2-study/#/learn/theory)에서 미리보기 10개와 `index-CluHXHUG.js`를 확인했다.
+- 공개 이론 10개에서 도해 12개를 각각 확대해 모두 로딩됨을 확인했다. 데스크톱 가로 넘침 없음, 커넥터 360px 모바일 확대창 가로 넘침 없음, 도해 참고자료 펼침 표시 확인, 공개 검수 탭 콘솔 오류·경고 없음.
+- 공개 확인에서는 학생의 읽음 표시·문항 답안을 변경하지 않았다. 로컬 검수용 학습 기록과 구분한다.
+
+증거: `verification/theory-images-20261024/public-audit.json`, `public-theory-list-desktop.png`, `public-orientation-desktop.png`, `public-orientation-mobile.png`. 이 기록의 후속 문서 커밋은 앱 코드를 바꾸지 않는다.
