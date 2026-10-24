@@ -65,7 +65,7 @@ const saveCheck = (id) => ({
 
 const executionNote = '공식 문서와 설정값을 대조한 실습 자료입니다. 이 화면은 IOS 명령을 실행하거나 장비 상태를 자동 채점하지 않습니다. 2026-10-23 ICQA 자료실 router.zip의 라우터 시험 데모(router.exe 1.0.0.0)에서 명령 수락·조회·저장을 직접 확인했습니다. 데모는 답안 제출 후 점수를 표시하지 않으므로 협회 채점 결과와 같다는 의미는 아닙니다. 데모 콘솔에는 붙여넣기 입력이 반영되지 않아 명령을 직접 입력했습니다.';
 
-const demoNote = detail => `ICQA 라우터 시험 데모 확인(2026-10-23): ${detail}`;
+const demoNote = (detail, date = '2026-10-23') => `ICQA 라우터 시험 데모 확인(${date}): ${detail}`;
 
 export const ROUTER_LABS = [
   {
@@ -456,7 +456,7 @@ export const ROUTER_LABS = [
         title: '두 라인의 설정을 각각 확인하세요',
         body: '특권 EXEC 모드로 돌아와 현재 설정에서 콘솔과 VTY 항목을 각각 찾습니다. VTY 범위와 exec-timeout의 두 값을 확인하세요.',
         commands: ['end', 'show running-config'],
-        check: '설정에 따라 비밀번호가 변환되어 표시될 수 있으므로 화면 문자열만으로 실제 인증 성공을 단정하지 않습니다.',
+        check: '설정에 따라 비밀번호가 변환되어 표시될 수 있으므로 화면 문자열만으로 실제 인증 성공을 단정하지 않습니다. ICQA 데모는 no service password-encryption 상태여서 두 라인의 비밀번호가 평문으로 표시되었습니다.',
       },
       {
         title: '저장하고 연습 범위를 구분하세요',
@@ -546,7 +546,8 @@ export const ROUTER_LABS = [
       '사용자 제공 2024 교재 PDF 289~291쪽의 VTY 비밀번호·유휴 시간·콘솔 비밀번호 유형을 참고했습니다. 과제 조건과 비밀번호, 제한 시간은 새로 정했습니다. 스캔 이미지는 포함하지 않았습니다.',
       'exec-timeout의 minutes [seconds] 순서와 라인 설정 모드, VTY의 원격 접속 역할을 Cisco 공식 문서로 대조했습니다. Telnet 유형을 실제 운영의 SSH 권고와 구분했습니다.',
       executionNote,
-      demoNote('기본 설정에는 line con 0, line aux 0, login이 포함된 line vty 0 4가 있었습니다. line console 0과 line vty 0 4에서 (config-line)# 프롬프트를 확인했고, password ? 도움말은 7(숨김 형식)과 LINE(평문) 입력 형식을 표시했습니다. exec-timeout 5 30이 수락되어 running-config와 startup-config의 line vty 0 4 아래에 남았습니다. 연습용 비밀번호 문자열과 콘솔 login 입력, 실제 인증과 유휴 종료 동작은 이번 검증에서 실행하지 않았습니다.'),
+      demoNote('기본 설정에는 line con 0, line aux 0, login이 포함된 line vty 0 4가 있었습니다. line console 0과 line vty 0 4에서 (config-line)# 프롬프트를 확인했고, password ? 도움말은 7(숨김 형식)과 LINE(평문) 입력 형식을 표시했습니다. exec-timeout 5 30이 수락되어 running-config와 startup-config의 line vty 0 4 아래에 남았습니다.'),
+      demoNote('새로 시작한 데모의 ROUTER1에서 line console 0에 password ConsoleLab26과 login을, line vty 0 4에 password VtyLab26, login, exec-timeout 5 30을 입력했고 모두 오류 없이 수락되었습니다. 데모는 no service password-encryption 상태여서 running-config의 line con 0 아래에 password ConsoleLab26과 login이, line vty 0 4 아래에 exec-timeout 5 30, password VtyLab26, login이 평문으로 표시되었습니다. copy running-config startup-config는 Building configuration...[OK]로 끝났고 show startup-config의 두 라인도 같았습니다. VTY의 login은 데모 기본 설정에도 있던 행입니다. 콘솔 재접속 시 비밀번호 확인, VTY 원격 접속 인증, 5분 30초 유휴 종료, 프로그램 재실행 후 보존은 실행하지 않았습니다.', '2026-10-24'),
     ],
     sources: [S.icqa, S.cli, S.timeout, S.security, S.configuration],
     relatedTheory: ['devices-switch-router'],

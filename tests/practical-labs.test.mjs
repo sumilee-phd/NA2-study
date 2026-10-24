@@ -105,6 +105,15 @@ test('router commands stay within what the ICQA router demo accepted', () => {
   assert.ok(LAB_BY_ID['router-interface'].solution[0].commands.includes('interface FastEthernet0/0'));
 });
 
+test('router-access notes separate saved line settings from unrun authentication checks', () => {
+  const notes = LAB_BY_ID['router-access'].sourceNotes.filter(note => note.startsWith('ICQA 라우터 시험 데모 확인'));
+  const latest = notes.find(note => note.startsWith('ICQA 라우터 시험 데모 확인(2026-10-24)'));
+  assert.ok(latest);
+  for (const fragment of ['password ConsoleLab26', 'password VtyLab26', 'exec-timeout 5 30', 'Building configuration...[OK]', 'show startup-config']) assert.ok(latest.includes(fragment), fragment);
+  assert.match(latest, /유휴 종료.*실행하지 않았습니다/);
+  assert.ok(!notes.some(note => note.includes('비밀번호 문자열과 콘솔 login 입력')));
+});
+
 test('windows labs record what the ICQA Windows emulator showed', () => {
   for (const lab of LABS.filter(item => item.group === 'windows')) {
     assert.ok(lab.sourceNotes.some(note => note.startsWith('ICQA Windows 실습용 에뮬레이터 확인(2026-10-23)')), lab.id);

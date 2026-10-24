@@ -80,9 +80,28 @@
 | router-basics | 공식 문제 1은 ROUTER2의 `ICQA`. 앱 예제 `LAB-R1`은 ROUTER1에 연습으로 설정 | 7개 명령 모두 수락. `LAB-R1(config)#`·`LAB-R1#` 프롬프트, `Destination filename [startup-config]?` 뒤 Enter로 `Building configuration...[OK]`, running·startup 모두 `hostname LAB-R1` | 통과 |
 | router-interface | 공식 문제 3은 FastEthernet 0/0에 192.168.0.100/24. 앱 예제는 192.168.10.1/26 | 기본 설정 인터페이스는 Fa0/0·Fa1/0·S2/0·S3/0. `interface FastEthernet0/0`, `ip address 192.168.10.1 255.255.255.192`, `no shutdown`, 저장 수락, startup에 주소·마스크 유지. `show interfaces`는 `FastEthernet0/0 is up, line protocol is down (disabled)`. 앱 절차의 `show ip interface brief`는 Invalid input | 수정 후 통과(설정·저장). 링크 up/up은 데모에서 미성립 |
 | router-route | 앱 전제(연결 구간 up, R2 반환 경로)가 데모에서 성립하지 않음 | 전역 설정에서 `ip route 192.168.20.0 255.255.255.0 10.0.12.2` 수락, running·startup에 같은 행. 두 라우터 Serial2/0에 10.0.12.1/30·10.0.12.2/30과 `no shutdown`을 넣어도 `changed state to down`. `show ip route`는 코드 범례와 `Gateway of last resort is not set`만 표시 | 수정 후 통과(설정·저장). 경로 등록·패킷 전달은 도구 미지원 |
-| router-access | — | 기본 설정에 `line con 0`, `line aux 0`, `login`이 있는 `line vty 0 4`. `line console 0`·`line vty 0 4`에서 `(config-line)#`, `password ?`는 `7`과 `LINE` 형식 표시. `exec-timeout 5 30` 수락, running·startup의 vty 아래 유지 | 일부 통과. 비밀번호 문자열·콘솔 `login` 입력과 인증·유휴 종료는 미실행 |
+| router-access | — | 2026-10-23: 기본 설정에 `line con 0`, `line aux 0`, `login`이 있는 `line vty 0 4`. `line console 0`·`line vty 0 4`에서 `(config-line)#`, `password ?`는 `7`과 `LINE` 형식 표시. `exec-timeout 5 30` 수락, running·startup의 vty 아래 유지. 2026-10-24 재검증은 아래 절 참조 | 통과(입력·저장). 인증·유휴 종료는 미실행 |
 
 공식 데모 3문항(2차 실행): ROUTER2 `enable` → `configure terminal` → `hostname ICQA` → `end` → `copy running-config startup-config`, ROUTER1 `enable` → `configure terminal` → `interface FastEthernet0/0` → `ip address 192.168.0.100 255.255.255.0` → `no shutdown` 1회 → `end` → `copy running-config startup-config`를 모두 `[OK]`까지 확인하고 제출했다. 제출 후 화면은 "수고하셨습니다."와 "처음으로"뿐이며 점수·문항별 정오를 표시하지 않는다. 따라서 **데모 자체 채점 결과는 확인할 수 없다(도구 미지원)**. 1차 실행에서는 ROUTER2의 `en`·`conf t`·`hostname ICQA`·`copy r s`·`sh start`로 시작 설정에 `hostname ICQA`가 저장되는 것을 따로 확인했다.
+
+### router-access 콘솔·VTY 재검증 (2026-10-24)
+
+2026-10-24 09:06~09:08 KST에 같은 `router.exe`(파일 버전 1.0.0.0, 561,152바이트, SHA-256 `08f679fd9b26d6a79bb0ccf2aca379e656196c37047a32a60ae6a65bd22f1d42`)를 새로 실행해 시험 데모의 ROUTER1 콘솔에서 확인했다. 실행 중인 다른 데모나 사용자 작업은 없었고, 답안은 제출하지 않았다. 입력한 비밀번호는 과제에 공개된 연습용 예제 문자열이며 실제 장비·계정 설정이 아니다.
+
+입력 순서: `enable` → `configure terminal` → `line console 0` → `password ConsoleLab26` → `login` → `exit` → `line vty 0 4` → `password VtyLab26` → `login` → `exec-timeout 5 30` → `end` → `show running-config` → `copy running-config startup-config`(질문에 Enter) → `show startup-config`. 변경 전 running-config에는 `line con 0` 아래 설정이 없고 `line vty 0 4` 아래 `login`만 있었다.
+
+| 통과 기준 | 관찰 결과 | 판정 |
+|---|---|---|
+| ① 콘솔 비밀번호·login 수락 | `Router(config-line)#`에서 `password ConsoleLab26`, `login`, `exit`가 오류 메시지 없이 다음 프롬프트로 진행 | 통과 |
+| ② VTY 비밀번호·login 수락 | `line vty 0 4` 후 `password VtyLab26`, `login`, `exec-timeout 5 30`, `end`가 오류 없이 진행, `%SYS-5-CONFIG_I` 표시 | 통과 |
+| ③ running-config 반영 | `no service password-encryption` 상태. `line con 0` 아래 `password ConsoleLab26`·`login`, `line vty 0 4` 아래 `exec-timeout 5 30`·`password VtyLab26`·`login`이 평문으로 표시 | 통과 |
+| ④ VTY 유휴 시간 유지 | `line vty 0 4` 아래 `exec-timeout 5 30` | 통과 |
+| ⑤ 저장 완료 | `Destination filename [startup-config]?` → Enter → `Building configuration...[OK]` | 통과 |
+| ⑥ startup-config 반영 | `show startup-config`의 두 라인 설정이 running-config와 같음 | 통과 |
+
+VTY의 `login`은 데모 기본 설정에도 있던 행이므로, 이번 입력이 수락된 사실은 명령 응답으로, 저장 결과는 두 설정 조회로 각각 확인했다. 설정 표시 순서는 `exec-timeout`, `password`, `login`이었다. 앱 내용의 오류는 없었으며, router-access의 확인 노트를 이 결과로 갱신하고 4단계 확인 문구에 데모의 평문 표시를 덧붙였다. 콘솔 재접속 시 비밀번호 확인, VTY 원격 접속 인증, 330초 유휴 종료, 프로그램 재실행 후 보존, 협회 채점은 실행하지 않았다.
+
+증거는 Git 제외 폴더 `verification/emulator-20261024/router-access/`(17장)와 `RUN.txt`, `SHA256SUMS.txt`에 보관한다. 갱신 후 `npm test`는 router-access 노트의 확인 범위와 미검증 범위를 검사하는 테스트 1개를 더해 99개 통과했다.
 
 ### 발견한 데모 동작과 앱 수정
 
@@ -121,5 +140,5 @@ Windows 반영 후 `npm test`는 Windows 에뮬레이터 확인 노트와 주요
 - Windows 에뮬레이터는 관리자 권한 런처를 거치지 않고 개별 화면 프로그램을 일반 권한으로 실행해 확인했다. 런처를 통한 실행과 저장·종료 동작이 같은지는 확인하지 못했다.
 - Windows 에뮬레이터는 채점 기능이 없으므로 시험 채점 결과를 확인할 수 없다. DHCP 범위 활성화와 주소 임대, DNS 이름 조회, 실제 통신은 실행하지 않았다.
 - 라우터 데모는 공식 데모 3문항만 내장하므로 앱 과제는 같은 콘솔에 연습 설정을 입력해 확인했다. 데모는 채점 결과를 표시하지 않아 협회 채점과의 일치는 확인할 수 없다.
-- 라우터 연결 구간·경로 등록·패킷 전달, 비밀번호 문자열과 콘솔 `login` 입력, 실제 인증과 `exec-timeout` 유휴 종료는 확인하지 못했다.
+- 라우터 연결 구간·경로 등록·패킷 전달, 콘솔 재접속 시 비밀번호 확인과 VTY 원격 접속 인증, `exec-timeout` 유휴 종료, 프로그램 재실행 후 설정 보존은 확인하지 못했다. 콘솔·VTY의 비밀번호와 `login` 입력·저장은 2026-10-24에 확인했다.
 - 실제 Cisco 장비와 Windows Server에서의 동작은 이번 검증 범위가 아니다.
