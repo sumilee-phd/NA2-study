@@ -115,6 +115,19 @@ test('router-access notes separate saved line settings from unrun authentication
   assert.ok(pitfalls.includes('저장과 프로그램 재실행을 구분하세요'));
 });
 
+test('router-access keeps the Packet Tracer VTY check apart from the ICQA demo', () => {
+  const lab = LAB_BY_ID['router-access'];
+  const notes = lab.sourceNotes.filter(note => note.includes('Packet Tracer'));
+  assert.equal(notes.length, 1);
+  assert.ok(notes[0].startsWith('Cisco Packet Tracer 9.0.0.0810 시뮬레이션 확인(2026-10-24, 1941 라우터 모델'));
+  for (const fragment of ['실제 장비가 아닌 소프트웨어 시뮬레이션', 'transport input telnet', 'password VtyLab26', 'exec-timeout 5 30', 'telnet 192.0.2.1', 'User Access Verification', 'closed by foreign host', '330.4초에서 344.2초 사이', 'show users', 'ICQA router.exe 데모에서는 이 기능을 지원하지 않습니다']) assert.ok(notes[0].includes(fragment), fragment);
+  assert.match(lab.environment, /telnet과 connect 명령이 지원되지 않고/);
+  const lastStep = lab.steps.at(-1).body;
+  assert.match(lastStep, /ICQA 라우터 시험 데모는 telnet과 connect를 지원하지 않아/);
+  assert.match(lastStep, /Packet Tracer .*시뮬레이션 결과이며 실제 장비 검증은 아닙니다/);
+  assert.ok(lab.pitfalls.some(item => item.title === '유휴 종료는 VTY 세션에서 확인하세요'));
+});
+
 test('windows labs record what the ICQA Windows emulator showed', () => {
   for (const lab of LABS.filter(item => item.group === 'windows')) {
     assert.ok(lab.sourceNotes.some(note => note.startsWith('ICQA Windows 실습용 에뮬레이터 확인(2026-10-23)')), lab.id);

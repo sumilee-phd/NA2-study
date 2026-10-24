@@ -423,7 +423,7 @@ export const ROUTER_LABS = [
       '라인 비밀번호와 login의 역할을 구분합니다.',
       'exec-timeout의 분·초 순서를 확인하고 시작 설정에 저장합니다.',
     ],
-    environment: '콘솔로 접속한 격리된 시험 연습 환경입니다. console 0과 vty 0~4가 제공되고, 별도 AAA 인증은 설정되지 않았으며 VTY의 Telnet 허용 및 IP 연결은 미리 준비되어 있다고 가정합니다. ICQA 라우터 시험 데모에서는 이 전제가 성립하지 않았습니다. telnet과 connect 명령이 지원되지 않고 라우터 간 링크도 올라오지 않아 VTY로 접속할 수 없었습니다. 아래 비밀번호는 이 연습에만 쓰는 예시입니다. 실제 운영 환경의 원격 접속 정책은 별도로 정해야 합니다.',
+    environment: '콘솔로 접속한 격리된 시험 연습 환경입니다. console 0과 vty 0~4가 제공되고, 별도 AAA 인증은 설정되지 않았으며 VTY의 Telnet 허용 및 IP 연결은 미리 준비되어 있다고 가정합니다. ICQA 라우터 시험 데모에서는 이 전제가 성립하지 않았습니다. telnet과 connect 명령이 지원되지 않고 라우터 간 링크도 올라오지 않아 VTY로 접속할 수 없었습니다. VTY 원격 인증과 유휴 종료는 Cisco Packet Tracer 9.0.0.0810의 1941 라우터 시뮬레이션에서 따로 확인했습니다. 아래 비밀번호는 이 연습에만 쓰는 예시입니다. 실제 운영 환경의 원격 접속 정책은 별도로 정해야 합니다.',
     scenario: '콘솔 라인과 VTY 라인에 서로 다른 연습용 비밀번호를 설정하세요. VTY에서는 사용자 입력이 5분 30초 동안 없으면 세션을 끝내도록 설정하고 저장하세요.',
     requirements: [
       { label: '콘솔 대상', value: 'console 0' },
@@ -460,7 +460,7 @@ export const ROUTER_LABS = [
       },
       {
         title: '저장하고 연습 범위를 구분하세요',
-        body: '시작 설정에 저장한 뒤 두 라인 항목을 확인합니다. ICQA 라우터 시험 데모는 telnet과 connect를 지원하지 않아 VTY 원격 인증과 유휴 종료를 확인할 수 없었습니다. 이 동작은 원격 접속을 지원하는 연습 장비에서 별도로 확인합니다.',
+        body: '시작 설정에 저장한 뒤 두 라인 항목을 확인합니다. ICQA 라우터 시험 데모는 telnet과 connect를 지원하지 않아 VTY 원격 인증과 유휴 종료를 확인할 수 없었습니다. Cisco Packet Tracer 9.0.0.0810의 1941 라우터 시뮬레이션에서는 PC의 telnet 접속이 VTY 비밀번호를 요구했고, 마지막 입력 후 330.4~344.2초 사이에 세션이 종료되었습니다. 시뮬레이션 결과이며 실제 장비 검증은 아닙니다.',
         commands: ['copy running-config startup-config', 'show startup-config'],
         check: 'Telnet 연습 절차를 운영 보안 설정의 완성본으로 사용하지 마세요. Cisco는 관리 정보 보호를 위해 SSH 같은 암호화된 원격 접속을 권고합니다.',
       },
@@ -539,6 +539,7 @@ export const ROUTER_LABS = [
       { title: 'VTY 번호와 개수를 구분하세요', body: '0 4는 시작과 끝 번호입니다. 4개를 선택한다는 의미가 아니며, 장비에 따라 추가 VTY 라인이 존재할 수 있습니다.' },
       { title: '분과 초의 자리를 바꾸지 마세요', body: 'exec-timeout 30 5는 30분 5초입니다. 또한 0 0은 0초 뒤 즉시 종료가 아니라 유휴 시간 제한을 없애는 설정이므로 이 과제의 답이 아닙니다.' },
       { title: '비밀번호와 login을 함께 확인하세요', body: '이 과제의 초기 인증 조건에서는 password로 라인 비밀번호를 지정하고 login으로 접속 시 확인을 적용합니다. 비밀번호만 적었다고 실제 접속 확인까지 완료된 것은 아닙니다.' },
+      { title: '유휴 종료는 VTY 세션에서 확인하세요', body: 'exec-timeout 5 30은 line vty 0 4에 넣은 값이므로 콘솔에서 기다린 시간으로는 확인되지 않습니다. 원격 접속한 VTY 세션에서 마지막 입력 뒤 아무것도 입력하지 않고 기다려야 하며, 중간에 입력하면 유휴 시간은 다시 0부터 계산됩니다. 세션이 끝날 때의 closed by foreign host 문구는 exit로 직접 끝낼 때도 표시되므로 경과 시간과 함께 판단합니다.' },
       { title: '저장과 프로그램 재실행을 구분하세요', body: 'ICQA 라우터 시험 데모는 router.exe를 닫았다가 다시 실행하면 새 시험으로 시작하여 show startup-config에 startup-config is not present가 표시되었습니다. 이는 데모 프로그램의 동작이며, 실제 장비에서 copy running-config startup-config 후 reload했을 때의 시작 설정 적용과 같은 의미가 아닙니다. 데모 안내대로 시험 중에는 작업 창을 닫지 않습니다.' },
       { title: '시험의 Telnet과 운영 환경의 SSH를 구분하세요', body: '교재의 Telnet 유형을 이해하는 연습입니다. 운영 환경에서는 인증·관리 정보가 암호화되는 SSH를 권고하며, 실제 장비의 계정·키·허용 접속 정책을 갖춘 별도 설정이 필요합니다.' },
     ],
@@ -550,6 +551,7 @@ export const ROUTER_LABS = [
       demoNote('기본 설정에는 line con 0, line aux 0, login이 포함된 line vty 0 4가 있었습니다. line console 0과 line vty 0 4에서 (config-line)# 프롬프트를 확인했고, password ? 도움말은 7(숨김 형식)과 LINE(평문) 입력 형식을 표시했습니다. exec-timeout 5 30이 수락되어 running-config와 startup-config의 line vty 0 4 아래에 남았습니다.'),
       demoNote('새로 시작한 데모의 ROUTER1에서 line console 0에 password ConsoleLab26과 login을, line vty 0 4에 password VtyLab26, login, exec-timeout 5 30을 입력했고 모두 오류 없이 수락되었습니다. 데모는 no service password-encryption 상태여서 running-config의 line con 0 아래에 password ConsoleLab26과 login이, line vty 0 4 아래에 exec-timeout 5 30, password VtyLab26, login이 평문으로 표시되었습니다. copy running-config startup-config는 Building configuration...[OK]로 끝났고 show startup-config의 두 라인도 같았습니다. VTY의 login은 데모 기본 설정에도 있던 행입니다.', '2026-10-24'),
       demoNote('콘솔에 password와 login을 적용한 뒤 exit로 EXEC 세션을 끝내자 Press RETURN to get started.가 표시되었고, Enter 후 User Access Verification과 Password: 요구가 나타났습니다. 연습용 오답 1회는 Password: 재요구로 거부되었고 ConsoleLab26 입력 후 Router>에 도달했습니다. VTY 확인을 위해 두 라우터의 FastEthernet0/0에 10.0.12.1/30과 10.0.12.2/30을 설정했지만 회선 프로토콜은 down이었고 ping은 0/5였으며, telnet과 connect는 도움말 목록에는 있으나 % Unrecognized command로 거부되었습니다. 따라서 VTY 원격 인증과 5분 30초 유휴 종료는 이 데모로 확인할 수 없습니다. 저장 후 router.exe를 종료하고 다시 실행하자 새 시험으로 시작했고, 비밀번호 요구 없이 Router>가 나타났으며 show startup-config는 startup-config is not present, running-config는 기본값이었습니다.', '2026-10-24'),
+      'Cisco Packet Tracer 9.0.0.0810 시뮬레이션 확인(2026-10-24, 1941 라우터 모델, show version 표시 IOS 15.1(4)M4): 실제 장비가 아닌 소프트웨어 시뮬레이션이며 VTY 라인만 확인했습니다. 라우터 GigabitEthernet0/0에 192.0.2.1/30, PC에 192.0.2.2/30을 설정해 ping 4/4를 확인했고, 원격 접속 전제 조건으로 line vty 0 4에 transport input telnet을 함께 넣었습니다. 같은 라인에 password VtyLab26, login, exec-timeout 5 30을 입력하고 copy running-config startup-config로 저장했습니다. PC에서 telnet 192.0.2.1을 실행하자 User Access Verification과 Password: 요구가 나타났고, 연습용 오답은 Password: 재요구로 거부되었으며 VtyLab26 입력 후 Router>에 도달했습니다. 이 VTY 세션의 마지막 입력 뒤 실시간 모드에서 아무것도 입력하지 않고 기다리자 330.4~332.7초에 캡처한 화면까지 Router>가 유지되었고, 341.9~344.2초에 캡처한 화면에는 [Connection to 192.0.2.1 closed by foreign host]가 표시되었습니다. 따라서 종료 시점은 마지막 입력 후 330.4초에서 344.2초 사이입니다. 종료 뒤 라우터 콘솔의 show users에서 vty 0 세션이 사라졌고, 다시 telnet으로 접속하자 같은 비밀번호 요구가 나타났습니다. ICQA router.exe 데모에서는 이 기능을 지원하지 않습니다.',
     ],
     sources: [S.icqa, S.cli, S.timeout, S.security, S.configuration],
     relatedTheory: ['devices-switch-router'],
