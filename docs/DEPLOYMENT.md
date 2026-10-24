@@ -152,7 +152,7 @@ ICQA 라우터 시험 데모가 지원하지 않는 VTY 원격 인증과 `exec-t
 - [Pages 배포 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40078005670): 2026-10-24 17:26:26 KST 완료. 배포용 빌드에서도 113개 테스트 통과.
 - 공개 주소: [8개 과제 최종 검증표](https://sumilee-phd.github.io/NA2-study/#/practical/lab/verification)
 
-Packet Tracer 후속 검증(1841·PC-PT·Server-PT)과 SOA Minimum TTL 동일 조건 재검증 결과를 검증표·상단 종합표·[실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md#cisco-packet-tracer-후속-검증-2026-10-24-1500160)에 반영했다. Packet Tracer 결과는 router-interface·router-route·router-basics·windows-ipv4·router-access가 통과, windows-dhcp·windows-dns-records·windows-dns-soa가 부분 확인이다. 부분 확인 배지 스타일을 추가했고, 과거 상태를 고정하던 테스트를 증거 기준의 상태·스타일·문구 검사로 바꿨다. 과제 ID·44개 점검 기준·정답·저장 구조는 바꾸지 않았다.
+Packet Tracer 후속 검증(1841·PC-PT·Server-PT)과 SOA Minimum TTL 동일 조건 재검증 결과를 검증표·상단 종합표·[실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md#cisco-packet-tracer-후속-검증-2026-10-24-15001604)에 반영했다. Packet Tracer 결과는 router-interface·router-route·router-basics·windows-ipv4·router-access가 통과, windows-dhcp·windows-dns-records·windows-dns-soa가 부분 확인이다. 부분 확인 배지 스타일을 추가했고, 과거 상태를 고정하던 테스트를 증거 기준의 상태·스타일·문구 검사로 바꿨다. 과제 ID·44개 점검 기준·정답·저장 구조는 바꾸지 않았다.
 
 로컬 확인: 영문 경로 작업 사본(커밋 `84ab06d`, 원래 작업 폴더와 파일 내용 동일)에서 `npm test` 113개 통과, `node scripts/sync-lab-verification.mjs --check` 일치, `git diff --check` 통과. `npm run verify:originals`는 원래 작업 폴더에서 통과(추적 파일 42개 일치). 배포 경로 빌드는 Git Bash에서 `BASE_PATH=/NA2-study/`가 Windows 경로로 바뀌어 잘못된 경로로 한 번 만들어졌고, PowerShell에서 다시 실행해 `/NA2-study/assets/index-DF2UsE2d.js`를 쓰는 산출물을 확인했다. 원래 작업 폴더(한글 경로)의 같은 빌드는 모듈 변환 직후 종료 코드 -1073740791로 끝나 `dist/`가 갱신되지 않았다.
 
