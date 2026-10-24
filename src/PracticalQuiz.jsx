@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import questionData from './content/practical-questions.json';
 import { PRACTICAL_KEY, prepareBank, loadPractical, savePractical, practicalReducer, wrongQuestionIds, getLatestAttempts } from './practical-model.mjs';
 import './practical-quiz.css';
+import { QuizFigures } from './PracticalFigures.jsx';
 
 const bank = prepareBank(questionData);
 const TYPES = { short: '단답형', single: '단일 선택', multiple: '복수 선택' };
@@ -27,6 +28,7 @@ function Explanation({ question }) {
   return <div className="hub-quiz-explanation">
     <p><strong>정답</strong> <Answer question={question} answer={question.answer}/></p>
     <p>{question.explanation}</p>
+    <QuizFigures questionId={question.id}/>
     <details className="hub-quiz-sources"><summary>출처와 근거 확인</summary>
       <p>{bank.source.filename} · PDF {question.pdfPage}쪽의 학습 주제를 재구성했습니다.</p>
       <ul>{question.evidenceIds.map(id => <li key={id}><a href={bank.evidence[id].url} target="_blank" rel="noopener noreferrer">{bank.evidence[id].title}<span className="hub-sr-only"> (새 탭)</span></a><small>{bank.evidence[id].locator}</small></li>)}</ul>

@@ -1,4 +1,5 @@
 import { PRACTICAL_AREAS, practicalSection } from './content/practical.mjs';
+import { PracticalFigures } from './PracticalFigures.jsx';
 
 function Title({ number, title, children }) {
   return <header className="hub-page-title hub-practical-title"><span className="hub-eyebrow">실기 학습 {number && ` / ${number}`}</span><h1>{title}</h1><p>{children}</p></header>;
@@ -43,6 +44,7 @@ function Work() {
       <a href="#/cabling/correction">틀린 배열 교정<span aria-hidden="true">→</span></a>
       <a href="#/learn/tools">케이블 제작 준비물<span aria-hidden="true">→</span></a>
     </div></aside></div>
+    <section className="practical-visuals" aria-label="케이블 제작과 판별 도해"><h2>압착 전과 시험기 연결 후, 무엇을 볼까요?</h2><PracticalFigures ids={['cable-quality', 'cable-tester']}/></section>
     <p className="hub-inline-note">화면에서 배열을 맞힌 것과 실물 케이블의 제작 품질은 별도로 확인합니다. 단순 도통 시험기의 결과만으로 모든 전송 성능이 검증되는 것은 아닙니다.</p>
   </>;
 }

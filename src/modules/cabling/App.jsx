@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { WIRES, STANDARDS, SOURCES, LESSONS, QUESTIONS } from './content.mjs';
+import { PracticalFigures } from '../../PracticalFigures.jsx';
+import { TheoryFigures } from '../../TheoryFigures.jsx';
 import { STORE_KEY, LEGACY_KEY, MAX_IMPORT_BYTES, loadState, saveState, makeSession, reducer, stats, pinDiagnostics, exportBackup, validateBackup } from './model.mjs';
 import './styles.css';
 
@@ -79,7 +81,7 @@ function ConfirmDialog({ config, onClose }) {
   </dialog>;
 }
 
-export default function App({ onTheory, onAssessmentState, route = '/cabling' }) {
+export default function App({ onTheory, onAssessmentState, route = '/cabling', showReferenceFigures = true }) {
   const [loaded] = useState(() => loadState(storage()));
   const [state, dispatch] = useReducer(reducer, loaded.state);
   const [view, setView] = useState(route === '/cabling/pins' ? 'pins' : route === '/cabling/correction' ? 'correction' : loaded.state.session && !loaded.state.session.completedAt ? 'train' : 'home');
@@ -205,14 +207,14 @@ export default function App({ onTheory, onAssessmentState, route = '/cabling' })
         <section className="course-grid">{[['pin', '01', '핀과 색상', '핀 번호와 색상 이름을 연결합니다.', '8문항'], ['order', '02', '배열 완성', '8개 전선을 목표 표준에 맞게 배열합니다.', 'A/B 2문항'], ['type', '03', '양 끝 결선', '두 배열을 비교하고 케이블 유형을 판별합니다.', '4문항']].map(([kind, n, title, detail, count]) => <article className="course-card" key={kind}><span className="course-number">{n}</span><h3>{title}</h3><p>{detail}</p><small>{count} · {KINDS[kind]}</small><button onClick={() => begin(kind, 'practice')}>연습 시작</button></article>)}</section>
         <section className="split-panel"><div><span className="eyebrow">제작 연습</span><h2>케이블 작업 10분</h2><p>실제 케이블을 제작하며 시간을 확인하고 점검 항목을 기록합니다.</p><small>배열 퀴즈의 점수와 실물 케이블 검사 결과는 별도로 관리합니다.</small></div><button className="primary" onClick={() => navigate('practical')}>제작 연습 열기</button></section>
       </div>}
-      {view === 'learn' && (assessmentInProgress ? <AssessmentGate onReturn={() => navigate('train')} /> : <><div className="actions theory-actions"><button onClick={() => theory('cabling-t568')}>통합 이론 · T568A/B</button><button onClick={() => theory('cabling-orientation')}>통합 이론 · 관찰 방향</button></div><Learn selected={lesson} onSelect={setLesson} onTrain={() => begin('mixed', 'practice')} /></>)}
+      {view === 'learn' && (assessmentInProgress ? <AssessmentGate onReturn={() => navigate('train')} /> : <><div className="actions theory-actions"><button onClick={() => theory('cabling-t568')}>통합 이론 · T568A/B</button><button onClick={() => theory('cabling-orientation')}>통합 이론 · 관찰 방향</button></div><Learn showFigures={showReferenceFigures && !assessmentInProgress} selected={lesson} onSelect={setLesson} onTrain={() => begin('mixed', 'practice')} /></>)}
       {view === 'pins' && <PinDiagnosis state={state} blocked={assessmentInProgress} onReview={ids => begin('pin', 'review', ids)} onTheory={theory} onReturn={() => navigate('train')} />}
       {view === 'correction' && (assessmentInProgress ? <AssessmentGate onReturn={() => navigate('train')} /> : <Correction state={state} dispatch={dispatch} confirm={setDialog} onTheory={theory} onRecheck={standard => begin('order', 'assessment', [`order-${standard.at(-1)}`])} />)}
       {view === 'train' && <div className="stack"><section className="content-panel"><div className="section-heading"><div><h2>훈련 선택</h2><p>연습은 힌트를 볼 수 있으며, 평가는 힌트 없이 풉니다.</p></div><div className="tabs" role="group" aria-label="훈련 방식">{['practice', 'assessment'].map(m => <button key={m} className={mode === m ? 'selected' : ''} aria-pressed={mode === m} onClick={() => setMode(m)}>{MODES[m]}</button>)}</div></div><div className="training-choices">{[['mixed', '혼합 10문항'], ['pin', '핀 · 색상 8문항'], ['order', '배열 A/B 2문항'], ['type', '유형 판별 4문항']].map(([kind, label]) => <button key={kind} onClick={() => begin(kind)}>{label} 시작</button>)}</div></section>
         {session ? session.completedAt ? <Result session={session} events={state.events} onRetry={ids => begin('mixed', 'review', ids)} onHome={() => navigate('home')} /> : <Training session={session} question={question} dispatch={dispatch} autoNext={state.settings.autoNext} /> : <div className="empty-state"><Icon name="train" /><h2>훈련 유형 선택</h2><p>핀 · 색상 확인, 배열 완성, 유형 판별을 선택할 수 있습니다.</p></div>}
       </div>}
       {view === 'wrong' && <div className="stack"><section className="split-panel"><div><h2>오답 복습</h2><p>각 문항의 가장 최근 응답을 기준으로 표시합니다. 다시 맞히면 목록에서 빠지며 과거 기록은 유지됩니다.</p></div><button className="primary" disabled={!summary.wrongIds.length} onClick={() => begin('mixed', 'review', summary.wrongIds)}>오답 {summary.wrongIds.length}개 복습</button></section>{summary.wrongIds.length ? summary.wrongIds.map(id => <article className="question-row" key={id}><div><small>{KINDS[BY_ID[id].kind]}</small><h3>{BY_ID[id].prompt}</h3></div><button onClick={() => begin('mixed', 'review', [id])}>다시 풀기</button></article>) : <div className="empty-state"><h2>오답 복습 대상 없음</h2><p>훈련 중 틀린 문항이 생기면 이곳에 모입니다.</p></div>}</div>}
-      {view === 'practical' && <Practical practical={state.practical} clock={clock} dispatch={dispatch} confirm={setDialog} />}
+      {view === 'practical' && <Practical showFigures={showReferenceFigures && !assessmentInProgress} practical={state.practical} clock={clock} dispatch={dispatch} confirm={setDialog} />}
       {view === 'stats' && <Records state={displayState} summary={summary} onExport={exportData} onImport={() => importRef.current.click()} onReset={reset} />}
       {view === 'about' && <div className="stack"><section className="content-panel"><h2>학습 범위와 이용 안내</h2><p>네트워크관리사 2급 실기의 케이블링 학습을 지원합니다. 표준 배열과 결선 관계를 연습하고, 실제 제작 연습 시간을 기록합니다.</p><p>앱에서 맞힌 배열은 실물 케이블의 압착·접촉·통신 성능을 검증하지 않습니다. 제작한 케이블은 실제 테스터와 실습 지도로 확인해 주세요.</p><p>학습 기록은 이 브라우저에 저장됩니다. 다른 기기와 자동 동기화되지 않으며, 브라우저 데이터 삭제에 대비해 백업을 내려받을 수 있습니다.</p><p>화면에 제공되는 문제는 학습용 자체 제작 문항입니다. 공식 기출문제나 합격 예측 점수로 표시하지 않습니다.</p></section>
         <section className="content-panel"><h2>설정</h2><label className="setting-row"><span><strong>문제 자동 진행</strong><small>제출 후 2.5초 뒤 다음 문항으로 이동합니다. 기본은 수동 진행입니다.</small></span><input type="checkbox" checked={state.settings.autoNext} onChange={e => dispatch({ type: 'SETTINGS', settings: { autoNext: e.target.checked } })} /></label><label className="setting-row"><span><strong>선택 효과</strong><small>운영체제의 동작 감소 설정도 함께 적용합니다.</small></span><input type="checkbox" checked={state.settings.motion} onChange={e => dispatch({ type: 'SETTINGS', settings: { motion: e.target.checked } })} /></label></section>
@@ -273,12 +275,13 @@ function Correction({ state, dispatch, confirm, onTheory, onRecheck }) {
   </div>;
 }
 
-function Learn({ selected, onSelect, onTrain }) {
+function Learn({ selected, onSelect, onTrain, showFigures }) {
   const active = LESSONS[selected] || LESSONS[0];
   return <div className="stack"><div className="lesson-tabs" role="group" aria-label="개념 선택">{LESSONS.map((item, index) => <button key={item.id} className={selected === index ? 'selected' : ''} aria-pressed={selected === index} onClick={() => onSelect(index)}>{item.title}</button>)}</div>
     <section className="content-panel"><span className="eyebrow">개념 확인</span><h2>{active.title}</h2>{active.paragraphs.map((p, i) => <p key={i}>{p}</p>)}<Sources ids={active.sourceIds} /></section>
     <section className="content-panel"><div className="section-heading"><div><h2>T568A와 T568B</h2><p>1·2번과 3·6번에 배치되는 초록·주황 쌍이 서로 바뀝니다.</p></div></div><div className="connector-pair"><Connector standard="T568A" /><Connector standard="T568B" /></div><div className="wire-legend">{Object.keys(WIRES).map(id => <Wire key={id} id={id} />)}</div></section>
     <section className="content-panel"><h2>양 끝 결선 비교</h2><div className="map-grid"><div><h3>직결 · A–A 또는 B–B</h3><WireMap left="T568B" right="T568B" /></div><div><h3>크로스 · A–B 또는 B–A</h3><WireMap left="T568A" right="T568B" /></div></div><p className="note">오른쪽 그림은 10BASE-T·100BASE-TX의 두 쌍 교차 구성입니다. 1↔3, 2↔6이 바뀌며 4·5·7·8번은 같은 핀으로 이어집니다. 1000BASE-T의 네 쌍 교차 구성과 구분합니다.</p></section>
+    {showFigures && active.id === 'orientation' && <TheoryFigures topicId="cabling-orientation" section={0}/>}
     <div className="actions"><button className="primary" onClick={onTrain}>개념을 확인했어요 · 연습 시작</button></div>
   </div>;
 }
@@ -316,7 +319,7 @@ function Result({ session, events, onRetry, onHome }) {
   return <section className="content-panel"><span className="eyebrow">훈련 완료</span><h2>{MODES[session.mode]} 결과</h2><div className="result-overview"><strong>{answered.length ? Math.round(correct / answered.length * 100) : 0}<small>%</small></strong><div><p>정답 {correct} / {answered.length}문항</p><p>학습용 정답률이며 실제 실기시험 점수와 다릅니다.</p></div></div><div className="actions"><button onClick={onHome}>대시보드</button><button className="primary" disabled={!wrong.length} onClick={() => onRetry(wrong)}>오답 {wrong.length}개 다시 풀기</button></div><div className="result-list">{answered.map((event, i) => <details key={event.id}><summary><span>{i + 1}. {BY_ID[event.questionId].prompt}</span><strong className={event.correct ? 'success-text' : 'error-text'}>{event.correct ? '정답' : '오답'}</strong></summary><p>내 답: <Answer question={BY_ID[event.questionId]} answer={event.answer} /></p><p>정답: <Answer question={BY_ID[event.questionId]} answer={BY_ID[event.questionId].answer} /></p><p>{BY_ID[event.questionId].explanation}</p></details>)}</div></section>;
 }
 
-function Practical({ practical, clock, dispatch, confirm }) {
+function Practical({ practical, clock, dispatch, confirm, showFigures }) {
   const active = practical?.active;
   const records = practical?.records || [];
   const remaining = active ? Math.max(0, Math.ceil((new Date(active.deadlineAt).getTime() - clock) / 1000)) : 600;
@@ -325,6 +328,7 @@ function Practical({ practical, clock, dispatch, confirm }) {
       <div className="checklist">{CHECKS.map((label, index) => <label key={label}><input type="checkbox" disabled={!active} checked={active?.checks[index] || false} onChange={e => dispatch({ type: 'PRACTICAL_CHECK', index, checked: e.target.checked })} /><span>{index + 1}. {label}</span></label>)}</div>
       <div className="actions center-actions">{active ? <button className="primary" onClick={() => confirm({ title: '제작 연습 종료', message: '현재까지의 시간과 자기점검 항목을 저장합니다. 미확인 항목은 미확인 상태로 남습니다.', label: '연습 완료', onConfirm: () => dispatch({ type: 'PRACTICAL_FINISH', at: iso() }) })}>연습 완료</button> : <button className="primary" onClick={() => dispatch({ type: 'PRACTICAL_START', at: iso() })}>10분 타이머 시작</button>}</div></section>
       <section className="content-panel"><h2>제작 연습 기록</h2>{records.length ? <div className="practical-records">{[...records].reverse().slice(0, 20).map(record => <details key={record.id}><summary><span>{stamp(record.startedAt)}</span><strong>{secondsLabel(record.elapsedSeconds)} · {record.expired ? '시간 종료' : '직접 완료'}</strong></summary><p>자기점검 {record.checks.filter(Boolean).length} / {CHECKS.length}개 · 실물 판정 아님</p><ul>{CHECKS.map((check, i) => <li key={check}>{record.checks[i] ? '확인' : '미확인'} · {check}</li>)}</ul></details>)}</div> : <p className="empty-copy">아직 제작 연습 기록이 없습니다.</p>}</section>
+      {showFigures && <section className="content-panel"><h2>제작 자기점검 그림</h2><PracticalFigures ids={['cable-quality', 'cable-tester']}/></section>}
     </div>;
 }
 
