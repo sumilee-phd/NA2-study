@@ -80,7 +80,7 @@
 | router-basics | 공식 문제 1은 ROUTER2의 `ICQA`. 앱 예제 `LAB-R1`은 ROUTER1에 연습으로 설정 | 7개 명령 모두 수락. `LAB-R1(config)#`·`LAB-R1#` 프롬프트, `Destination filename [startup-config]?` 뒤 Enter로 `Building configuration...[OK]`, running·startup 모두 `hostname LAB-R1` | 통과 |
 | router-interface | 공식 문제 3은 FastEthernet 0/0에 192.168.0.100/24. 앱 예제는 192.168.10.1/26 | 기본 설정 인터페이스는 Fa0/0·Fa1/0·S2/0·S3/0. `interface FastEthernet0/0`, `ip address 192.168.10.1 255.255.255.192`, `no shutdown`, 저장 수락, startup에 주소·마스크 유지. `show interfaces`는 `FastEthernet0/0 is up, line protocol is down (disabled)`. 앱 절차의 `show ip interface brief`는 Invalid input | 수정 후 통과(설정·저장). 링크 up/up은 데모에서 미성립 |
 | router-route | 앱 전제(연결 구간 up, R2 반환 경로)가 데모에서 성립하지 않음 | 전역 설정에서 `ip route 192.168.20.0 255.255.255.0 10.0.12.2` 수락, running·startup에 같은 행. 두 라우터 Serial2/0에 10.0.12.1/30·10.0.12.2/30과 `no shutdown`을 넣어도 `changed state to down`. `show ip route`는 코드 범례와 `Gateway of last resort is not set`만 표시 | 수정 후 통과(설정·저장). 경로 등록·패킷 전달은 도구 미지원 |
-| router-access | — | 2026-10-23: 기본 설정에 `line con 0`, `line aux 0`, `login`이 있는 `line vty 0 4`. `line console 0`·`line vty 0 4`에서 `(config-line)#`, `password ?`는 `7`과 `LINE` 형식 표시. `exec-timeout 5 30` 수락, running·startup의 vty 아래 유지. 2026-10-24 재검증은 아래 절 참조 | 통과(입력·저장). 인증·유휴 종료는 미실행 |
+| router-access | 앱은 VTY Telnet 허용과 IP 연결을 전제하지만 데모에서는 성립하지 않음 | 2026-10-23: 기본 설정에 `line con 0`, `line aux 0`, `login`이 있는 `line vty 0 4`. `line console 0`·`line vty 0 4`에서 `(config-line)#`, `password ?`는 `7`과 `LINE` 형식 표시. `exec-timeout 5 30` 수락, running·startup의 vty 아래 유지. 2026-10-24 재검증은 아래 두 절 참조 | 입력·저장 통과, 콘솔 인증 통과. VTY 인증·유휴 종료는 도구 미지원, 재실행 후 보존은 불일치(새 시험으로 초기화) |
 
 공식 데모 3문항(2차 실행): ROUTER2 `enable` → `configure terminal` → `hostname ICQA` → `end` → `copy running-config startup-config`, ROUTER1 `enable` → `configure terminal` → `interface FastEthernet0/0` → `ip address 192.168.0.100 255.255.255.0` → `no shutdown` 1회 → `end` → `copy running-config startup-config`를 모두 `[OK]`까지 확인하고 제출했다. 제출 후 화면은 "수고하셨습니다."와 "처음으로"뿐이며 점수·문항별 정오를 표시하지 않는다. 따라서 **데모 자체 채점 결과는 확인할 수 없다(도구 미지원)**. 1차 실행에서는 ROUTER2의 `en`·`conf t`·`hostname ICQA`·`copy r s`·`sh start`로 시작 설정에 `hostname ICQA`가 저장되는 것을 따로 확인했다.
 
@@ -99,9 +99,26 @@
 | ⑤ 저장 완료 | `Destination filename [startup-config]?` → Enter → `Building configuration...[OK]` | 통과 |
 | ⑥ startup-config 반영 | `show startup-config`의 두 라인 설정이 running-config와 같음 | 통과 |
 
-VTY의 `login`은 데모 기본 설정에도 있던 행이므로, 이번 입력이 수락된 사실은 명령 응답으로, 저장 결과는 두 설정 조회로 각각 확인했다. 설정 표시 순서는 `exec-timeout`, `password`, `login`이었다. 앱 내용의 오류는 없었으며, router-access의 확인 노트를 이 결과로 갱신하고 4단계 확인 문구에 데모의 평문 표시를 덧붙였다. 콘솔 재접속 시 비밀번호 확인, VTY 원격 접속 인증, 330초 유휴 종료, 프로그램 재실행 후 보존, 협회 채점은 실행하지 않았다.
+VTY의 `login`은 데모 기본 설정에도 있던 행이므로, 이번 입력이 수락된 사실은 명령 응답으로, 저장 결과는 두 설정 조회로 각각 확인했다. 설정 표시 순서는 `exec-timeout`, `password`, `login`이었다. 앱 내용의 오류는 없었으며, router-access의 확인 노트를 이 결과로 갱신하고 4단계 확인 문구에 데모의 평문 표시를 덧붙였다. 이 실행에서는 콘솔 재접속 시 비밀번호 확인, VTY 원격 접속 인증, 330초 유휴 종료, 프로그램 재실행 후 보존, 협회 채점을 실행하지 않았다. 앞의 네 항목은 같은 날 다음 절에서 따로 확인했다.
 
 증거는 Git 제외 폴더 `verification/emulator-20261024/router-access/`(17장)와 `RUN.txt`, `SHA256SUMS.txt`에 보관한다. 갱신 후 `npm test`는 router-access 노트의 확인 범위와 미검증 범위를 검사하는 테스트 1개를 더해 99개 통과했다.
+
+### router-access 인증·유휴 종료·재실행 검증 (2026-10-24)
+
+2026-10-24 09:30~09:35 KST에 같은 `router.exe`(1.0.0.0, SHA-256 `08f679fd…1d42`)로 수행했다. 실행 전 다른 `router.exe`는 없었고, 답안은 제출하지 않았다. 1차 실행은 09:30:01에 시작했으며(데모 남은 시간 19:56) ROUTER1·ROUTER2 콘솔을 사용했다.
+
+| 항목 | 실제 실행 방법 | 관찰 결과 | 판정 |
+|---|---|---|---|
+| A. 콘솔 재접속 인증 | ROUTER1에서 `line console 0` → `password ConsoleLab26` → `login` → `end` 후 `Router#`에서 `exit`로 EXEC 세션 종료, Enter로 새 세션 시작, 연습용 오답 1회, 정답 1회 | `Router con0 is now available`, `Press RETURN to get started.` → Enter 후 `User Access Verification`, `Password:` → 오답 입력 후 `Password:` 재요구(입력 문자 미표시) → `ConsoleLab26` 입력 후 `Router>` | 관찰 범위 내 통과 |
+| B. VTY 원격 인증 | 대상 ROUTER1: `line vty 0 4`에 `password VtyLab26`·`login`·`exec-timeout 5 30`, `FastEthernet0/0`에 10.0.12.1/30·`no shutdown` 1회. 출발 ROUTER2: `FastEthernet0/0`에 10.0.12.2/30·`no shutdown` 1회 후 `show interfaces`, `ping 10.0.12.1`, `telnet 10.0.12.1`, `connect 10.0.12.1`, `telnet ?` | ROUTER2 `FastEthernet0/0 is up, line protocol is down (disabled)`, ping `.....` 0/5. `telnet`·`connect`는 `?` 도움말 목록에 있으나 실행하면 `% Unrecognized command` | 도구 미지원(원격 접속 명령 미구현, 연결 전제도 미충족). 인증은 미검증 |
+| C. VTY 330초 유휴 종료 | B에서 VTY 세션을 열 수 없어 실행하지 않음. 로컬 콘솔 방치로 대신하지 않음 | — | 도구 미지원(전제 세션 없음). 미검증 |
+| D. 프로그램 재실행 후 보존 | ROUTER1에서 콘솔·VTY 설정 후 `copy running-config startup-config` `[OK]`(남은 시간 17:18), 종료 직전 running·startup 캡처 → 창 닫기, 09:33:37 프로세스 종료 확인 → 09:33:47 같은 경로로 재실행, 시작 화면·안내 페이지의 정상 절차만 사용(불러오기 기능 없음) → 아무 설정 없이 조회 | 재실행 후 새 시험(남은 시간 19:57). 부팅 배너 뒤 비밀번호 요구 없이 `Router>`. running-config는 기본값(`line con 0` 하위 설정 없음, `line vty 0 4` 아래 `login`만), `show startup-config`는 `startup-config is not present` | 실행했으나 보존되지 않음(프로그램 재실행 시 새 시험으로 초기화) |
+
+D는 데모 프로그램을 다시 실행할 때 새 시험을 시작하는 동작이다. 같은 실행 안에서의 `copy` 저장 성공(2026-10-24 앞 절)이나 실제 장비의 `reload` 후 NVRAM 동작과 같은 의미로 해석하지 않는다. `reload` 명령은 실행하지 않았다.
+
+학습 자료 반영: router-access 2단계 확인 문구에 콘솔 재접속 시 비밀번호 요구를, 5단계와 환경 설명에 데모의 원격 접속 미지원을, 주의점에 "저장과 프로그램 재실행을 구분하세요"를 추가했다. 확인 노트의 미실행 문장은 위 결과로 바꾸었다. 과제 조건·명령·기준값과 점검 항목 ID는 바꾸지 않았다.
+
+증거는 Git 제외 폴더 `verification/emulator-20261024-auth-restart/`(`run1/` 16장, `run2-after-restart/` 6장, `RUN.txt`, `SHA256SUMS.txt`)에 보관한다. `telnet`·`connect`가 도움말 목록에 있다는 근거는 `verification/emulator-20261023/router-run1/10-r1-exec-help-p1.jpg`이다.
 
 ### 발견한 데모 동작과 앱 수정
 
@@ -140,5 +157,5 @@ Windows 반영 후 `npm test`는 Windows 에뮬레이터 확인 노트와 주요
 - Windows 에뮬레이터는 관리자 권한 런처를 거치지 않고 개별 화면 프로그램을 일반 권한으로 실행해 확인했다. 런처를 통한 실행과 저장·종료 동작이 같은지는 확인하지 못했다.
 - Windows 에뮬레이터는 채점 기능이 없으므로 시험 채점 결과를 확인할 수 없다. DHCP 범위 활성화와 주소 임대, DNS 이름 조회, 실제 통신은 실행하지 않았다.
 - 라우터 데모는 공식 데모 3문항만 내장하므로 앱 과제는 같은 콘솔에 연습 설정을 입력해 확인했다. 데모는 채점 결과를 표시하지 않아 협회 채점과의 일치는 확인할 수 없다.
-- 라우터 연결 구간·경로 등록·패킷 전달, 콘솔 재접속 시 비밀번호 확인과 VTY 원격 접속 인증, `exec-timeout` 유휴 종료, 프로그램 재실행 후 설정 보존은 확인하지 못했다. 콘솔·VTY의 비밀번호와 `login` 입력·저장은 2026-10-24에 확인했다.
+- 라우터 연결 구간·경로 등록·패킷 전달, VTY 원격 접속 인증, `exec-timeout 5 30`에 의한 VTY 유휴 종료는 데모가 `telnet`·`connect`를 지원하지 않고 링크도 올라오지 않아 확인하지 못했다. 콘솔·VTY의 비밀번호와 `login` 입력·저장, 콘솔 재접속 시 비밀번호 인증은 2026-10-24에 확인했다. 데모는 재실행하면 새 시험으로 초기화되어 재실행 간 설정 보존은 제공하지 않는다.
 - 실제 Cisco 장비와 Windows Server에서의 동작은 이번 검증 범위가 아니다.

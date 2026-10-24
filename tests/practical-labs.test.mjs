@@ -107,11 +107,12 @@ test('router commands stay within what the ICQA router demo accepted', () => {
 
 test('router-access notes separate saved line settings from unrun authentication checks', () => {
   const notes = LAB_BY_ID['router-access'].sourceNotes.filter(note => note.startsWith('ICQA 라우터 시험 데모 확인'));
-  const latest = notes.find(note => note.startsWith('ICQA 라우터 시험 데모 확인(2026-10-24)'));
-  assert.ok(latest);
-  for (const fragment of ['password ConsoleLab26', 'password VtyLab26', 'exec-timeout 5 30', 'Building configuration...[OK]', 'show startup-config']) assert.ok(latest.includes(fragment), fragment);
-  assert.match(latest, /유휴 종료.*실행하지 않았습니다/);
-  assert.ok(!notes.some(note => note.includes('비밀번호 문자열과 콘솔 login 입력')));
+  const latest = notes.filter(note => note.startsWith('ICQA 라우터 시험 데모 확인(2026-10-24)')).join(' ');
+  for (const fragment of ['password ConsoleLab26', 'password VtyLab26', 'exec-timeout 5 30', 'Building configuration...[OK]', 'show startup-config', 'User Access Verification', '% Unrecognized command', 'startup-config is not present']) assert.ok(latest.includes(fragment), fragment);
+  assert.match(latest, /VTY 원격 인증과 5분 30초 유휴 종료는 이 데모로 확인할 수 없습니다/);
+  assert.ok(!notes.some(note => note.includes('비밀번호 문자열과 콘솔 login 입력') || note.includes('프로그램 재실행 후 보존은 실행하지 않았습니다')));
+  const pitfalls = LAB_BY_ID['router-access'].pitfalls.map(item => item.title);
+  assert.ok(pitfalls.includes('저장과 프로그램 재실행을 구분하세요'));
 });
 
 test('windows labs record what the ICQA Windows emulator showed', () => {
