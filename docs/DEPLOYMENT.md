@@ -129,3 +129,18 @@ ICQA 라우터 시험 데모가 지원하지 않는 VTY 원격 인증과 `exec-t
 로컬 확인: 별도 작업 사본에서 최신 main(`f901176`) 위로 재배치한 뒤 테스트 107개 통과, 영문 경로 `vite build`의 새 `dist/` 산출물과 메인 번들의 새 노트 포함을 확인했다. `npm run verify:originals`는 원래 작업 폴더에서 통과(추적 파일 42개 일치, 스크립트는 줄 끝 문자 외 동일). 로컬 미리보기에서 router-access 초 값 오답 판정 → 수정 시 판정 해제 → 6/6 → 새로고침 복원, 다른 작업의 실습 그림 표시, 360×800 가로 넘침 없음, 콘솔 로그 없음을 확인했다.
 
 공개 주소에서 메인 번들 `index-DZoxdDuq.js`를 확인했다. router-access에 Packet Tracer 시뮬레이션 노트 1개, 5단계의 시뮬레이션 결과 문장, "유휴 종료는 VTY 세션에서 확인하세요" 주의점이 표시되고, ICQA 데모로 VTY 원격 인증과 유휴 종료를 확인할 수 없다는 문구도 유지되었다. 같은 브라우저에 앞서 남긴 router-interface·windows-ipv4·router-access 기록이 유지되어 router-access는 6/6으로 복원되었다. 360×800 가로 넘침과 콘솔 로그는 없었다. 실행·로컬·공개 화면 증거는 Git 제외 폴더 `verification/vty-lab-20261024-packet-tracer/`(`screens/`, `local/`, `public/`, `RUN.txt`, `SHA256SUMS.txt`)에 보관한다.
+
+## 2026-10-24 8개 과제 최종 검증표 공개
+
+- 배포 코드: [`03ff8375fb8c5ec13457ec6af8d11f1bd4684085`](https://github.com/sumilee-phd/NA2-study/commit/03ff8375fb8c5ec13457ec6af8d11f1bd4684085)
+- [자동 검증 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40067785986): Ubuntu·Node.js 22의 설치·테스트·빌드 통과.
+- [Pages 배포 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40067785987): 2026-10-24 14:50 KST 완료. 배포용 빌드에서도 설치·테스트·빌드·아티팩트 업로드를 통과했다.
+- 공개 주소: [8개 과제 최종 검증표](https://sumilee-phd.github.io/NA2-study/#/practical/lab/verification)
+
+문서 상단과 사이트에서 같은 검증 데이터를 사용하도록 구성하고, 실습 목록·개별 과제에 검증표 진입 링크를 추가했다. ICQA와 Packet Tracer의 확인 범위·미실시 항목·공통 한계를 구분한다. 기존 과제 조건·44개 점검 기준·저장 구조는 변경하지 않았다.
+
+로컬 검수는 109개 테스트, 원본 42개 파일 일치, 영문 경로 사본의 배포용 빌드를 통과했다. 입력·판정 보존, 다른 탭의 변경 경고, 케이블링 평가 중 직접 경로·새로고침 차단과 종료 후 복원, 잘못된 하위 경로 안내를 확인했다. 상세 범위는 [실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md#최종-검증표-공개-화면-구현-검수-2026-10-24)를 따른다.
+
+공개 사이트의 메인 번들 `index-Bkacqbrk.js`는 로컬 검수 빌드와 동일한 이름이다. 실습 목록 진입 링크, 검증표 8행, router-access 과제 왕복, 새로고침 후 표시와 360×800 화면의 가로 넘침 없음을 확인했다. 앞서 공개 브라우저에 저장된 DHCP 완료 표시와 목록 1/8 상태도 유지되었다. 공개 검수 탭의 error·warn 로그는 없었다. 실제 스마트폰·모든 브라우저의 검증을 뜻하지 않는다.
+
+공개 화면 증거는 Git 제외 폴더 `verification/lab-verification-summary-20261024/public-summary.png`, `public-mobile.png`에 보관한다. 이 배포 이력을 기록하는 후속 문서 커밋은 앱 코드·빌드 산출물을 변경하지 않는다.
