@@ -93,3 +93,15 @@ ICQA Windows 실습용 에뮬레이터에서 확인한 화면 차이(마스크 �
 로컬 확인: `npm test` 98개 통과, `npm run verify:originals` 통과(추적 파일 42개 일치). 한글 경로에서는 `vite build`가 메시지 없이 `dist/`를 갱신하지 않아 영문 임시 경로 사본에서 빌드를 통과했다. 그 빌드로 windows-dns-soa 5/6 → 수정 시 판정 해제 → 6/6 → 새로고침 복원, Windows 상세 4개의 새 안내와 에뮬레이터 확인 노트, 필기 900문항 로딩과 답안 유지, 실기 단답형 PRAC-006 초안 복원, 케이블링 평가 중 실습 자료 미표시와 4/4 완료 후 해제, 360×800 가로 넘침 없음, 콘솔 로그 없음을 확인했다.
 
 공개 주소에서 메인 번들 `index-Cl4esbkB.js`와 실습 번들 `PracticalLabs-B5o17QJm.js`를 확인했다. Windows 과제 4개의 에뮬레이터 확인 노트와 검토 범위 문구가 표시되고 이전의 "설치·실행하여 검증한 결과는 아니다" 문구가 사라졌다. 앞선 라우터 배포 때 같은 브라우저에 남긴 router-interface 확인 기록은 갱신 후에도 유지되었다. windows-ipv4에서 6/6 판정 후 새로고침해도 입력·판정이 유지되었고, 공개 검수 탭의 콘솔 로그는 없었다. 공개 화면 증거는 Git 제외 폴더 `verification/emulator-20261023/public/`에 보관한다.
+
+## 2026-10-24 router-access 콘솔·VTY 검증 반영
+
+- 배포 코드: [`36ecc4a6436bc216e541e1555a86b964695709a2`](https://github.com/sumilee-phd/NA2-study/commit/36ecc4a6436bc216e541e1555a86b964695709a2)
+- [자동 검증 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40043810420): Ubuntu·Node.js 22에서 99개 테스트 통과, 빌드 통과.
+- [Pages 배포 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40043810352): 2026-10-24 09:13 KST 완료. 배포용 빌드에서도 99개 테스트 통과.
+
+ICQA 라우터 시험 데모에서 콘솔·VTY 연습용 비밀번호와 `login`, `exec-timeout 5 30`의 입력 수락과 running-config·startup-config 저장을 확인한 결과를 router-access 확인 노트와 [실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md#router-access-콘솔vty-재검증-2026-10-24)에 반영했다. 과제 조건·명령·기준값은 바꾸지 않았다.
+
+로컬 확인: `npm test` 99개 통과, `npm run verify:originals` 통과(추적 파일 42개 일치). 영문 임시 경로 사본에서 `vite build`가 새 `dist/` 산출물을 만들었고, 실습 번들에 2026-10-24 노트가 포함되고 이전 미실행 문구가 빠진 것을 확인했다. 그 빌드로 router-access 5/6 → 수정 시 판정 해제 → 6/6 → 새로고침 복원, 목록 진행률 1/8, 360×800 가로 넘침 없음, 콘솔 로그 없음을 확인했다.
+
+공개 주소에서 메인 번들 `index-E-VTiiDh.js`와 실습 번들 `PracticalLabs-yOa4L7aF.js`를 확인했다. router-access에 2026-10-23·2026-10-24 확인 노트가 표시되고 이전 "비밀번호 문자열과 콘솔 login 입력" 미실행 문구가 사라졌다. 같은 브라우저에 앞서 남긴 router-interface·windows-ipv4 확인 기록은 갱신 후에도 유지되었다. router-access에서 6/6 판정 후 새로고침해도 입력·판정이 유지되었고, 공개 검수 탭의 콘솔 로그는 없었다. 공개 화면 증거는 Git 제외 폴더 `verification/emulator-20261024/public/`에 보관한다.
