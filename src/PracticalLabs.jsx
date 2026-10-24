@@ -5,6 +5,8 @@ import { TOPICS } from './content/learning.mjs';
 import { LAB_STORAGE_KEY, loadLabState, persistLabState, updateLabEntry, freshLabEntry, gradeLab, completedLabs } from './practical-lab-model.mjs';
 import './practical-labs.css';
 import { LabFigures } from './PracticalFigures.jsx';
+import LabVerification from './LabVerification.jsx';
+import { LAB_VERIFICATION_PATH } from './content/lab-verification.mjs';
 
 const storage = () => { try { return window.localStorage; } catch { return { getItem() { throw new Error('브라우저 저장소 접근이 제한되어 있습니다.'); } }; } };
 const labHref = lab => `#/practical/lab/${lab.id}`;
@@ -26,6 +28,7 @@ function Index({ state }) {
     <header className="hub-page-title"><span className="hub-eyebrow">실기 학습 / 02</span><h1>Windows·라우터 실습 자료</h1><p>조건을 읽고 설정값을 점검한 뒤, 공식 실습 프로그램에서 직접 수행하세요.</p></header>
     <div className="labs-intro"><div><strong>출제 OS · Windows Server 2022</strong><p>2025년 8월 1일부터 적용되며, 실기 에뮬레이터는 기존 방식을 사용합니다. <External source={PRACTICAL_SOURCES.examStandard}>공식 변경 안내</External></p></div><div className="labs-progress"><span>입력값 확인</span><b>{completed}<small> / {LABS.length}</small></b><progress value={completed} max={LABS.length} aria-label="실습 자료 입력값 확인 완료"/></div></div>
     <p className="labs-boundary">이곳의 점검 결과는 설정값을 이해했는지 확인하는 학습 기록입니다. 실제 프로그램의 실행 결과와 시험 점수는 별도로 확인합니다.</p>
+    <section className="labs-verification-entry" aria-label="실습 자료 검증 결과"><div><h2>실습 자료 검증 결과</h2><p>ICQA와 Packet Tracer에서 확인한 내용과 남은 한계를 비교합니다.</p></div><a className="hub-button" href={`#${LAB_VERIFICATION_PATH}`}>8개 과제 최종 검증표 <span aria-hidden="true">→</span></a></section>
     {LAB_GROUPS.map(group => <section className="labs-group" key={group.id} aria-labelledby={`labs-group-${group.id}`}>
       <div className="labs-group-title"><div><h2 id={`labs-group-${group.id}`}>{group.title}</h2><p>{group.description}</p></div><span>{LABS.filter(lab => lab.group === group.id).length}개 과제</span></div>
       <div className="labs-grid">{LABS.filter(lab => lab.group === group.id).map((lab, i) => {
@@ -70,6 +73,7 @@ function Detail({ lab, entry, change }) {
       <section className="labs-section labs-solution"><button type="button" className="labs-disclosure" aria-expanded={solutionOpen} aria-controls="labs-solution-body" onClick={openSolution}>풀이와 확인 방법 <span aria-hidden="true">{solutionOpen ? '−' : '+'}</span></button>{solutionOpen && <div id="labs-solution-body">{lab.solution.map((step, i) => <div className="labs-solution-step" key={i}><h3>{step.title}</h3><p>{step.body}</p><Commands commands={step.commands}/></div>)}<LabFigures labId={lab.id}/></div>}</section>
       <section className="labs-section"><h2>자주 틀리는 부분</h2><div className="labs-pitfalls">{lab.pitfalls.map((item, i) => <div key={i}><h3>{item.title}</h3><p>{item.body}</p></div>)}</div></section>
       <section className="labs-section labs-sources"><h2>출처와 검토 범위</h2><p>검토일: 2026-10-23 · {LAB_GROUPS.find(group => group.id === lab.group).reviewNote}</p><ul>{lab.sources.map((source, i) => <li key={i}><External source={source}/>{source.section && <small>{source.section}</small>}</li>)}</ul><details><summary>교재 참고 위치와 교정 내용</summary><p>『2024 최적합 네트워크관리사 1·2급 필기+실기』 PDF {lab.sourcePages.join(', ')}쪽을 참고했습니다. 쪽수는 표지 포함 PDF 기준입니다.</p><ul>{lab.sourceNotes.map((note, i) => <li key={i}>{note}</li>)}</ul></details></section>
+      <a className="labs-verification-detail-link" href={`#${LAB_VERIFICATION_PATH}`}>8개 과제 최종 검증표와 남은 한계 →</a>
       <div className="labs-bottom"><a className="hub-button" href="#/practical/lab">실습 자료 목록</a>{nextLab && <a className="hub-button primary" href={labHref(nextLab)}>다음: {nextLab.title} →</a>}</div>
     </div><aside className="labs-aside"><section className="hub-panel"><h2>학습 목표</h2><ul>{lab.objectives.map((objective, i) => <li key={i}>{objective}</li>)}</ul><h3>실습 환경</h3><p>{lab.environment}</p><External source={lab.group === 'windows' ? PRACTICAL_SOURCES.windows64 : PRACTICAL_SOURCES.router}>공식 실습 도구 안내</External><h3>관련 이론</h3><div className="labs-theory-links">{lab.relatedTheory.map(id => { const topic = TOPICS.find(item => item.id === id); return topic ? <a key={id} href={`#/learn/theory/${id}`}>{topic.title} →</a> : null; })}</div></section></aside></div>
   </article>;
@@ -106,5 +110,5 @@ export default function PracticalLabs({ path, visible = true }) {
   const change = (id, action) => setState(current => updateLabEntry(current, id, action(current.entries[id] || freshLabEntry())));
   const lab = labFromPath(path);
   if (!visible) return null;
-  return <div className="labs-root">{warning && <div className="labs-warning" role="alert"><p>{warning}</p><button type="button" className="hub-button" onClick={() => backup(state)}>현재 입력 백업</button><button type="button" className="hub-button" onClick={() => window.location.reload()}>새로고침</button></div>}{path === '/practical/lab' ? <Index state={state}/> : lab ? <Detail key={lab.id} lab={lab} entry={state.entries[lab.id] || freshLabEntry()} change={action => change(lab.id, action)}/> : <div className="hub-empty"><h1>실습 과제를 찾을 수 없습니다</h1><p>목록에서 학습할 과제를 선택해 주세요.</p><a className="hub-button" href="#/practical/lab">실습 자료 목록</a></div>}</div>;
+  return <div className="labs-root">{warning && <div className="labs-warning" role="alert"><p>{warning}</p><button type="button" className="hub-button" onClick={() => backup(state)}>현재 입력 백업</button><button type="button" className="hub-button" onClick={() => window.location.reload()}>새로고침</button></div>}{path === LAB_VERIFICATION_PATH ? <LabVerification/> : path === '/practical/lab' ? <Index state={state}/> : lab ? <Detail key={lab.id} lab={lab} entry={state.entries[lab.id] || freshLabEntry()} change={action => change(lab.id, action)}/> : <div className="hub-empty"><h1>실습 과제를 찾을 수 없습니다</h1><p>목록에서 학습할 과제를 선택해 주세요.</p><a className="hub-button" href="#/practical/lab">실습 자료 목록</a></div>}</div>;
 }
