@@ -144,3 +144,20 @@ ICQA 라우터 시험 데모가 지원하지 않는 VTY 원격 인증과 `exec-t
 공개 사이트의 메인 번들 `index-Bkacqbrk.js`는 로컬 검수 빌드와 동일한 이름이다. 실습 목록 진입 링크, 검증표 8행, router-access 과제 왕복, 새로고침 후 표시와 360×800 화면의 가로 넘침 없음을 확인했다. 앞서 공개 브라우저에 저장된 DHCP 완료 표시와 목록 1/8 상태도 유지되었다. 공개 검수 탭의 error·warn 로그는 없었다. 실제 스마트폰·모든 브라우저의 검증을 뜻하지 않는다.
 
 공개 화면 증거는 Git 제외 폴더 `verification/lab-verification-summary-20261024/public-summary.png`, `public-mobile.png`에 보관한다. 이 배포 이력을 기록하는 후속 문서 커밋은 앱 코드·빌드 산출물을 변경하지 않는다.
+
+## 2026-10-24 Packet Tracer 후속 검증·SOA 재검증 결과 반영
+
+- 배포 코드: [`84ab06d58b1dc3ff54b69fbeaa3960bead81f9e0`](https://github.com/sumilee-phd/NA2-study/commit/84ab06d58b1dc3ff54b69fbeaa3960bead81f9e0)
+- [자동 검증 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40078005633): Ubuntu·Node.js 22에서 113개 테스트 통과, 빌드 통과. 2026-10-24 17:26:12 KST 완료.
+- [Pages 배포 성공](https://github.com/sumilee-phd/NA2-study/actions/runs/40078005670): 2026-10-24 17:26:26 KST 완료. 배포용 빌드에서도 113개 테스트 통과.
+- 공개 주소: [8개 과제 최종 검증표](https://sumilee-phd.github.io/NA2-study/#/practical/lab/verification)
+
+Packet Tracer 후속 검증(1841·PC-PT·Server-PT)과 SOA Minimum TTL 동일 조건 재검증 결과를 검증표·상단 종합표·[실습 검수 보고서](PRACTICAL_LABS_VERIFICATION.md#cisco-packet-tracer-후속-검증-2026-10-24-1500160)에 반영했다. Packet Tracer 결과는 router-interface·router-route·router-basics·windows-ipv4·router-access가 통과, windows-dhcp·windows-dns-records·windows-dns-soa가 부분 확인이다. 부분 확인 배지 스타일을 추가했고, 과거 상태를 고정하던 테스트를 증거 기준의 상태·스타일·문구 검사로 바꿨다. 과제 ID·44개 점검 기준·정답·저장 구조는 바꾸지 않았다.
+
+로컬 확인: 영문 경로 작업 사본(커밋 `84ab06d`, 원래 작업 폴더와 파일 내용 동일)에서 `npm test` 113개 통과, `node scripts/sync-lab-verification.mjs --check` 일치, `git diff --check` 통과. `npm run verify:originals`는 원래 작업 폴더에서 통과(추적 파일 42개 일치). 배포 경로 빌드는 Git Bash에서 `BASE_PATH=/NA2-study/`가 Windows 경로로 바뀌어 잘못된 경로로 한 번 만들어졌고, PowerShell에서 다시 실행해 `/NA2-study/assets/index-DF2UsE2d.js`를 쓰는 산출물을 확인했다. 원래 작업 폴더(한글 경로)의 같은 빌드는 모듈 변환 직후 종료 코드 -1073740791로 끝나 `dist/`가 갱신되지 않았다.
+
+그 영문 경로 빌드로 검증표 8행과 통과 13개·부분 확인 3개 배지, 실습 목록·개별 과제·검증표 사이 이동, router-interface 입력·판정의 새로고침 후 복원, 케이블링 평가 중 검증표 직접 진입·새로고침 차단과 평가 종료 후 표시, 360×800 화면의 카드 배치와 가로 넘침 없음을 확인했다. 브라우저 콘솔 로그는 없었다.
+
+공개 주소에서 메인 번들 `index-DdOB8CfY.js`를 확인했다. 검증표 8행, Packet Tracer 열의 부분 확인 배지 3개(windows-dhcp·windows-dns-records·windows-dns-soa), 새 환경 설명(1941·1841·PC-PT·Server-PT), SOA 600·700·600 문구, 기존 VTY 330.4초 초과~344.2초 이하와 ICQA 재실행 초기화 문구가 표시되었다. 검증표·개별 과제·실습 목록 이동과 상세 기록 링크(GitHub 문서, 새 절 포함)가 동작했고, 같은 브라우저의 기존 학습 기록 3건이 유지되었다. 360×800에서 페이지 가로 넘침과 콘솔 로그는 없었다. 실제 스마트폰·모든 브라우저 검증을 뜻하지 않는다.
+
+화면 증거는 Git 제외 폴더 `verification/lab-verification-update-20261024-1725/`(`local/`, `public/`)에 보관한다. 실험 증거는 `verification/packet-tracer-followup-20261024-1500/`, `verification/soa-ttl-recheck-20261024-1646/`에 있다.
