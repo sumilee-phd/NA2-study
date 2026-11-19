@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { LAYER_TERMS, NAME_MAX, NAME_PATTERN_SOURCE, isAutoName, randomName, layerNote, ROOM_KEY, GAP_MS, cleanName, dayKey, dayStart, emptyRoom, parseRoom, loadRoom, saveRoom, tickRoom, roomSeconds, startRoom, stopRoom, formatDuration, rosterView, newClientId } from '../src/study-room-model.mjs';
+import { SEATS, LAYER_TERMS, NAME_MAX, NAME_PATTERN_SOURCE, isAutoName, randomName, layerNote, ROOM_KEY, GAP_MS, cleanName, dayKey, dayStart, emptyRoom, parseRoom, loadRoom, saveRoom, tickRoom, roomSeconds, startRoom, stopRoom, formatDuration, rosterView, newClientId } from '../src/study-room-model.mjs';
 
 const ID = '11111111-2222-4333-8444-555555555555';
 const T0 = Date.UTC(2026, 10, 19, 3, 0, 0); // KST 2026-11-19 12:00
@@ -116,4 +116,6 @@ test('서버 SQL의 닉네임 형식 검사가 앱의 목록과 일치', () => {
   assert.ok(found, 'SQL에 형식 검사가 있어야 한다');
   assert.equal(found[1], NAME_PATTERN_SOURCE);
   assert.ok(sql.includes('check (char_length(name) between 1 and ' + NAME_MAX + ')'));
+  assert.ok(sql.includes('generate_series(1, ' + SEATS + ')'), '좌석 수가 앱과 같아야 한다');
+  assert.ok(sql.includes('limit ' + SEATS + ';'));
 });

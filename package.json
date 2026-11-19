@@ -11,6 +11,14 @@
     "prepare:practical": "node scripts/prepare-practical-bank.mjs",
     "verify:originals": "node scripts/verify-originals.mjs"
   },
-  "dependencies": { "react": "^19.1.0", "react-dom": "^19.1.0" },
-  "devDependencies": { "@vitejs/plugin-react": "^4.6.0", "vite": "^6.3.5" }
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "three": "^0.180.0",
+    "trystero": "^0.27.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.6.0",
+    "vite": "^6.3.5"
+  }
 }

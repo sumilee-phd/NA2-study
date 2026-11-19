@@ -1,6 +1,7 @@
 // 함께 공부(공부시간 공유) 타이머 모델. 화면·통신과 분리한 순수 함수만 둠.
 export const ROOM_KEY = 'na2-study:room:v1';
 export const NAME_MAX = 16;
+export const SEATS = 10; // 스터디카페 좌석 수. supabase/study-room.sql의 좌석 배정과 같아야 함
 export const GAP_MS = 5 * 60 * 1000; // 이보다 오래 기록이 끊기면 창이 닫혀 있던 것으로 보고 그 구간은 제외
 export const DAY_SECONDS = 86400;
 const KST_OFFSET = 9 * 60 * 60 * 1000;
@@ -114,7 +115,8 @@ export function rosterView(rows, fetchedAt, now, mine) {
     const studying = me && mine ? mine.studying : Boolean(row.studying);
     const base = Math.max(0, Math.floor(Number(row.secs) || 0));
     const seconds = me && mine ? mine.seconds : Math.min(DAY_SECONDS, base + (studying ? span(fetchedAt, now) : 0));
-    return { id: row.id, name: cleanName(me && mine ? mine.name : row.nick) || '이름 없음', studying, seconds, me };
+    const seat = Number.isInteger(row.seat) && row.seat >= 1 && row.seat <= SEATS ? row.seat : null;
+    return { id: row.id, name: cleanName(me && mine ? mine.name : row.nick) || '이름 없음', studying, seconds, me, seat };
   });
   return list.sort((a, b) => b.seconds - a.seconds || a.name.localeCompare(b.name, 'ko'));
 }
