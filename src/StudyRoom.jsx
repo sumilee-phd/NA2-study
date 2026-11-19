@@ -115,6 +115,8 @@ export default function StudyRoom() {
   );
   const studyingCount = people.filter(person => person.studying).length;
   const seated = people.filter(person => person.seat).length;
+  // 실습대에서 케이블 제작을 연습하는 시간도 공부시간으로 셈
+  const benchChange = active => { setAtBench(active); if (active && roomRef.current.startedAt == null) start(); };
   const selfInfo = useMemo(() => ({ name: room.name, time: formatDuration(seconds) }), [room.name, seconds]);
   const fullNote = full && <p className="room-full" role="status">자리가 모두 찼습니다({SEATS}석). 잠시 후 다시 오세요.</p>;
   const action = studying
@@ -144,8 +146,8 @@ export default function StudyRoom() {
     </section>}
     {view && <div className="room-view" role="dialog" aria-modal="true" aria-labelledby="room-view-title" tabIndex={-1} ref={viewRef}>
       <header className="room-view-head"><h2 id="room-view-title">NA2 스터디카페</h2><span>{seated} / {SEATS}석 · 공부 중 {studyingCount}명</span><button type="button" className="room-close" onClick={() => { setView(false); toggleRef.current?.focus(); }}>닫기</button></header>
-      <div className="room-stage"><Suspense fallback={<p className="room-loading" role="status">스터디카페를 준비하고 있습니다…</p>}><StudyScene people={people} self={selfInfo} onAway={stop} onSit={start} onPickSeat={pickSeat} onBench={setAtBench}/></Suspense>{atBench && <a className="room-bench-link" href="#/cabling" onClick={() => { setView(false); setAtBench(false); }}>케이블링 훈련 열기</a>}<p className="room-tip">바닥을 누르거나 방향키(WASD)로 이동합니다. 빈 자리를 누르면 앉고, 자리를 뜨면 공부시간이 멈춥니다. 실습대를 누르면 케이블 제작 순서를 연습합니다. 움직임은 참가자 브라우저끼리 직접 연결해 공유합니다.</p></div>
-      <footer className="room-view-foot"><div className="room-view-me"><span>{room.name}</span><b>{formatDuration(seconds)}</b><small>{studying ? '공부 중' : seconds > 0 ? '멈춤' : '시작 전'}</small></div>{action}{fullNote}</footer>
+      <div className="room-stage"><Suspense fallback={<p className="room-loading" role="status">스터디카페를 준비하고 있습니다…</p>}><StudyScene people={people} self={selfInfo} onAway={stop} onSit={start} onPickSeat={pickSeat} onBench={benchChange}/></Suspense>{atBench && <a className="room-bench-link" href="#/cabling" onClick={() => { setView(false); setAtBench(false); }}>케이블링 훈련 열기</a>}<p className="room-tip">바닥을 누르거나 방향키(WASD)로 이동합니다. 빈 자리를 누르면 앉고, 자리를 뜨면 공부시간이 멈춥니다. 실습대를 누르면 케이블 제작 순서를 연습하며 공부시간에 포함됩니다. 움직임은 참가자 브라우저끼리 직접 연결해 공유합니다.</p></div>
+      <footer className="room-view-foot"><div className="room-view-me"><span>{room.name}</span><b>{formatDuration(seconds)}</b><small>{studying ? (atBench ? '실습 중' : '공부 중') : seconds > 0 ? '멈춤' : '시작 전'}</small></div>{action}{fullNote}</footer>
       <ul className="room-sr">{people.filter(person => person.seat).map(person => <li key={person.id}>{person.seat}번 자리 {person.name}, {person.studying ? '공부 중' : '멈춤'}, {formatDuration(person.seconds)}</li>)}</ul>
     </div>}
     <button type="button" ref={toggleRef} className={`room-toggle ${studying ? 'is-on' : ''}`} aria-expanded={open} aria-controls="room-panel" onClick={() => setOpen(value => !value)}>

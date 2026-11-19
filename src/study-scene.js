@@ -476,7 +476,8 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
       const moved = me.seat !== myRow.seat;
       me.rosterId = myRow.id; me.seat = myRow.seat; me.studying = myRow.studying; occupied[myRow.seat] = me;
       if (moved && me.mode === 'sit') standUp(me);
-      if (me.studying && me.mode !== 'sit' && (moved || me.goal !== 'sit')) { if (!walkTo(me, seatEntry(me.seat), 'sit')) sit(me); }
+      // 실습대에서 연습하는 동안에는 공부 중이어도 자리로 돌아가지 않음
+      if (me.studying && me.mode !== 'sit' && me.mode !== 'bench' && me.goal !== 'bench' && (moved || me.goal !== 'sit')) { if (!walkTo(me, seatEntry(me.seat), 'sit')) sit(me); }
     } else {
       if (me.mode === 'sit') standUp(me);
       me.rosterId = null; me.seat = null; me.studying = false; if (me.goal === 'sit') { me.goal = null; me.path = []; }
@@ -495,8 +496,8 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
       desk.bulbMaterial.color.set(on ? '#fff2b8' : '#59635f'); desk.glowMaterial.opacity = on ? 0.5 : 0;
       desk.screenMaterial.color.set(on ? '#bfe9d8' : '#2a3431'); desk.lightMaterial.color.set(on ? '#a8e5c8' : '#8c9a94');
     });
-    for (const actor of actors.values()) drawLabel(actor.label, actor.name || '', actor.time || '', actor.mode !== 'sit' ? '자리 비움' : actor.studying ? '공부 중' : '멈춤', false);
-    drawLabel(me.label, self.name || '나', self.time || '', me.seat == null ? '자리 없음' : me.mode !== 'sit' ? '자리 비움' : me.studying ? '공부 중' : '멈춤', true);
+    for (const actor of actors.values()) drawLabel(actor.label, actor.name || '', actor.time || '', actor.mode === 'bench' && actor.studying ? '실습 중' : actor.mode !== 'sit' ? '자리 비움' : actor.studying ? '공부 중' : '멈춤', false);
+    drawLabel(me.label, self.name || '나', self.time || '', me.mode === 'bench' && me.studying ? '실습 중' : me.seat == null ? '자리 없음' : me.mode !== 'sit' ? '자리 비움' : me.studying ? '공부 중' : '멈춤', true);
   }
 
   function stepPath(actor, dt) {
