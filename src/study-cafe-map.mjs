@@ -2,7 +2,10 @@
 export const SEAT_X = [-4.4, -2.2, 0, 2.2, 4.4];
 export const ROW_Z = [-2.9, 1.9];
 export const BOUNDS = { minX: -6.7, maxX: 10.8, minZ: -4.45, maxZ: 4.5 };
-export const ENTRANCE = { x: 1.5, z: 4.0 };
+export const ENTRANCE = { x: 6.15, z: 2.2 };
+// 돌발퀴즈 답 구역: 앞줄 책상 앞 빈 바닥에 1~4번을 나란히 둠
+export const QUIZ_ZONES = [-4.2, -1.4, 1.4, 4.2].map((x, i) => ({ n: i + 1, x, z: 3.65, w: 2.5, d: 1.5 }));
+export function zoneOf(x, z) { for (const zone of QUIZ_ZONES) if (Math.abs(x - zone.x) <= zone.w / 2 && Math.abs(z - zone.z) <= zone.d / 2) return zone.n; return null; }
 export const BENCH_SPOT = { x: -6.25, z: 3.1 }; // 케이블링 실습대 앞
 export const WALK_SPEED = 2.6;
 const RADIUS = 0.25; // 캐릭터 몸통 반지름만큼 가구를 넓혀서 계산

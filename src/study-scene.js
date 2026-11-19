@@ -1,7 +1,7 @@
 // 함께 공부 3D 스터디카페. three만 사용하고 화면(React)과 분리함.
 // 좌석 10개, 사람마다 닉네임 해시로 생김새를 정함. 공부 중이면 스탠드가 켜지고 필기 동작을 함.
 import * as THREE from 'three';
-import { BENCH_SPOT, ENTRANCE, WALK_SPEED, findPath, seatAnchor, seatEntry, seatSpot, slide } from './study-cafe-map.mjs';
+import { BENCH_SPOT, ENTRANCE, QUIZ_ZONES, WALK_SPEED, zoneOf, findPath, seatAnchor, seatEntry, seatSpot, slide } from './study-cafe-map.mjs';
 
 const FPS = 20;
 
@@ -252,7 +252,7 @@ function buildPerson(id) {
   return { group, head, left, right, legs, mug, pencil, phase: (seed % 628) / 100 };
 }
 
-export function createStudyScene(container, { reducedMotion = false, seats = 10, onState, onAway, onSit, onPickSeat, onBench } = {}) {
+export function createStudyScene(container, { reducedMotion = false, seats = 10, onState, onAway, onSit, onPickSeat, onBench, onQuizStand } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -431,6 +431,44 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
   me.pos = { ...ENTRANCE }; me.heading = Math.PI; me.rosterId = null; me.name = ''; place(me);
   let self = { name: '', time: '00:00:00' };
 
+  // 돌발퀴즈 답 구역 1~4번: 퀴즈가 진행될 때만 바닥에 나타남
+  const quiz = { active: false, answer: null };
+  const zones = QUIZ_ZONES.map((zone, index) => {
+    const tile = document.createElement('canvas'); tile.width = 320; tile.height = 192;
+    const tc = tile.getContext('2d');
+    tc.fillStyle = ['#2f79c4', '#e08a3c', '#7a5ea8', '#c2475d'][index]; tc.beginPath(); tc.roundRect(4, 4, 312, 184, 26); tc.fill();
+    tc.lineWidth = 8; tc.strokeStyle = '#ffffff'; tc.stroke();
+    tc.fillStyle = '#ffffff'; tc.textAlign = 'center'; tc.textBaseline = 'middle'; tc.font = '700 130px "Malgun Gothic", sans-serif'; tc.fillText(String(zone.n), 160, 104);
+    const texture = new THREE.CanvasTexture(tile); texture.colorSpace = THREE.SRGBColorSpace;
+    const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0, depthWrite: false });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(zone.w - 0.12, zone.d - 0.12), material);
+    mesh.rotation.x = -Math.PI / 2; mesh.position.set(zone.x, 0.012, zone.z); mesh.visible = false; scene.add(mesh);
+    return { n: zone.n, mesh, material };
+  });
+  function stepQuiz(now, dt) {
+    // 답 구역에 서 있는 동안은 공부시간에 포함
+    const standing = quiz.active && me.mode !== 'sit' && me.mode !== 'bench' && zoneOf(me.pos.x, me.pos.z) != null;
+    if (standing !== Boolean(me.inQuiz)) {
+      me.inQuiz = standing;
+      if (standing) onQuizStand?.(true);
+      else { onQuizStand?.(false); if (me.studying && me.mode !== 'sit' && me.mode !== 'bench' && me.goal !== 'sit' && me.goal !== 'bench') { me.studying = false; onAway?.(); } }
+    }
+    for (const zone of zones) {
+      const goal = !quiz.active ? 0 : quiz.answer == null ? 0.8 : zone.n === quiz.answer ? 1 : 0.25;
+      const step = Math.sign(goal - zone.material.opacity) * Math.min(Math.abs(goal - zone.material.opacity), dt * 3);
+      zone.material.opacity += step; zone.mesh.visible = zone.material.opacity > 0.01;
+      zone.material.color.set(quiz.answer != null && zone.n !== quiz.answer ? '#8c9a94' : '#ffffff');
+    }
+    // 정답 구역에 선 캐릭터는 폴짝 뜀
+    if (quiz.active && quiz.answer != null && !reducedMotion) {
+      for (const actor of [me, ...actors.values()]) {
+        if (actor.mode === 'sit' || actor.mode === 'bench' || actor.moving || zoneOf(actor.pos.x, actor.pos.z) !== quiz.answer) continue;
+        actor.person.group.position.y = Math.abs(Math.sin(now / 1000 * 7 + actor.person.phase)) * 0.35;
+        actor.person.left.rotation.z = 2.4; actor.person.right.rotation.z = -2.4;
+      }
+    }
+  }
+
   function share(force) {
     const s = me.mode === 'sit' ? 0 : me.moving ? 1 : me.mode === 'bench' ? 3 : 2;
     const key = `${s}|${me.pos.x.toFixed(2)}|${me.pos.z.toFixed(2)}`;
@@ -450,7 +488,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     if (me.mode === 'sit') standUp(me);
     if (me.mode === 'bench') { me.mode = 'stand'; onBench?.(false); }
     me.goal = null;
-    if (me.studying) { me.studying = false; onAway?.(); }
+    if (me.studying && !me.inQuiz) { me.studying = false; onAway?.(); }
   }
 
   function update(people, mine) {
@@ -477,7 +515,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
       me.rosterId = myRow.id; me.seat = myRow.seat; me.studying = myRow.studying; occupied[myRow.seat] = me;
       if (moved && me.mode === 'sit') standUp(me);
       // 실습대에서 연습하는 동안에는 공부 중이어도 자리로 돌아가지 않음
-      if (me.studying && me.mode !== 'sit' && me.mode !== 'bench' && me.goal !== 'bench' && (moved || me.goal !== 'sit')) { if (!walkTo(me, seatEntry(me.seat), 'sit')) sit(me); }
+      if (me.studying && me.mode !== 'sit' && me.mode !== 'bench' && me.goal !== 'bench' && !me.inQuiz && (moved || me.goal !== 'sit')) { if (!walkTo(me, seatEntry(me.seat), 'sit')) sit(me); }
     } else {
       if (me.mode === 'sit') standUp(me);
       me.rosterId = null; me.seat = null; me.studying = false; if (me.goal === 'sit') { me.goal = null; me.path = []; }
@@ -497,7 +535,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
       desk.screenMaterial.color.set(on ? '#bfe9d8' : '#2a3431'); desk.lightMaterial.color.set(on ? '#a8e5c8' : '#8c9a94');
     });
     for (const actor of actors.values()) drawLabel(actor.label, actor.name || '', actor.time || '', actor.mode === 'bench' && actor.studying ? '실습 중' : actor.mode !== 'sit' ? '자리 비움' : actor.studying ? '공부 중' : '멈춤', false);
-    drawLabel(me.label, self.name || '나', self.time || '', me.mode === 'bench' && me.studying ? '실습 중' : me.seat == null ? '자리 없음' : me.mode !== 'sit' ? '자리 비움' : me.studying ? '공부 중' : '멈춤', true);
+    drawLabel(me.label, self.name || '나', self.time || '', me.inQuiz && me.studying ? '퀴즈 중' : me.mode === 'bench' && me.studying ? '실습 중' : me.seat == null ? '자리 없음' : me.mode !== 'sit' ? '자리 비움' : me.studying ? '공부 중' : '멈춤', true);
   }
 
   function stepPath(actor, dt) {
@@ -639,7 +677,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     if (now - state.last < 1000 / FPS - 4) return;
     const dt = Math.min(0.25, state.last ? (now - state.last) / 1000 : 0.05);
     state.last = now;
-    simulate(now, dt); paint(); pose(now);
+    simulate(now, dt); paint(); pose(now); stepQuiz(now, dt);
     // 누군가 실습 중이면 제작 순서 안내판을 띄움
     const practicing = me.mode === 'bench' || [...actors.values()].some(actor => actor.mode === 'bench');
     const fade = boardSprite.material.opacity + (practicing ? dt * 3 : -dt * 3);
@@ -655,6 +693,9 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     setRemote(value) { if (value.id !== me.rosterId) remotes.set(value.id, { ...value, at: performance.now() }); },
     dropRemote(id) { remotes.delete(id); },
     announce() { share(true); },
+    // 돌발퀴즈: 진행 여부와 공개된 정답(1~4, 공개 전에는 null)
+    setQuiz(value) { quiz.active = Boolean(value?.active); quiz.answer = quiz.active && [1, 2, 3, 4].includes(value.answer) ? value.answer : null; state.dirty = true; },
+    myZone() { return me.mode === "sit" || me.mode === "bench" ? null : zoneOf(me.pos.x, me.pos.z); },
     dispose() {
       state.disposed = true; cancelAnimationFrame(state.raf); observer.disconnect();
       window.removeEventListener('keydown', keyDown); window.removeEventListener('keyup', keyUp); window.removeEventListener('blur', blur);
