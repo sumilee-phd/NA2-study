@@ -3,14 +3,14 @@ import { createStudyScene } from './study-scene.js';
 import { SEATS, formatDuration } from './study-room-model.mjs';
 
 // 3D 스터디카페 화면. three와 Trystero는 이 파일을 열 때만 내려받음
-export default function StudyScene({ people, self, onAway, onSit, onPickSeat }) {
+export default function StudyScene({ people, self, onAway, onSit, onPickSeat, onBench }) {
   const host = useRef(null);
   const scene = useRef(null);
   const net = useRef(null);
   const handlers = useRef({});
   const myId = useRef(null);
   const [broken, setBroken] = useState(false);
-  handlers.current = { onAway, onSit, onPickSeat };
+  handlers.current = { onAway, onSit, onPickSeat, onBench };
   myId.current = people.find(person => person.me && person.seat)?.id ?? null;
 
   useEffect(() => {
@@ -22,6 +22,7 @@ export default function StudyScene({ people, self, onAway, onSit, onPickSeat }) 
         onAway: () => handlers.current.onAway?.(),
         onSit: () => handlers.current.onSit?.(),
         onPickSeat: seat => handlers.current.onPickSeat?.(seat),
+        onBench: active => handlers.current.onBench?.(active),
         // 자리가 있는 사람만 위치를 알림
         onState: value => { if (myId.current) net.current?.send({ id: myId.current, ...value }); },
       });

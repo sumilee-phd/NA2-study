@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BOUNDS, ENTRANCE, blocked, clearLine, findPath, slide, seatAnchor, seatEntry, seatSpot, cleanRemote } from '../src/study-cafe-map.mjs';
+import { BENCH_SPOT, BOUNDS, ENTRANCE, blocked, clearLine, findPath, slide, seatAnchor, seatEntry, seatSpot, cleanRemote } from '../src/study-cafe-map.mjs';
 
 function walkable(from, path) {
   let at = from;
@@ -10,6 +10,8 @@ function walkable(from, path) {
 
 test('입구와 모든 자리의 진입 지점은 비어 있고, 책상 위는 막혀 있음', () => {
   assert.equal(blocked(ENTRANCE.x, ENTRANCE.z), false);
+  assert.equal(blocked(BENCH_SPOT.x, BENCH_SPOT.z), false, '실습대 앞');
+  assert.ok(findPath(ENTRANCE, BENCH_SPOT).length > 0);
   for (let i = 0; i < 10; i += 1) {
     const entry = seatEntry(i); const desk = seatAnchor(i); const spot = seatSpot(i);
     assert.equal(blocked(entry.x, entry.z), false, `자리 ${i + 1} 진입 지점`);
@@ -57,5 +59,6 @@ test('키보드 이동은 막힌 방향으로 가지 않고 벽을 따라 미끄
 test('다른 참가자가 보낸 위치는 형식과 범위를 확인', () => {
   assert.deepEqual(cleanRemote({ id: '24f986ee', x: 1, z: 2, s: 1 }), { id: '24f986ee', x: 1, z: 2, s: 1 });
   assert.deepEqual(cleanRemote({ id: '24f986ee', x: 999, z: -999, s: 2 }), { id: '24f986ee', x: BOUNDS.maxX, z: BOUNDS.minZ, s: 2 });
+  assert.equal(cleanRemote({ id: '24f986ee', x: 0, z: 0, s: 3 }).s, 3, '실습대에서 연습 중');
   for (const bad of [null, 'x', {}, { id: 'zzz', x: 0, z: 0, s: 0 }, { id: '24f986ee', x: NaN, z: 0, s: 0 }, { id: '24f986ee', x: 0, z: 0, s: 7 }, { id: 5, x: 0, z: 0, s: 0 }]) assert.equal(cleanRemote(bad), null);
 });

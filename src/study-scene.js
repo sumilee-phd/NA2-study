@@ -1,7 +1,7 @@
 // 함께 공부 3D 스터디카페. three만 사용하고 화면(React)과 분리함.
 // 좌석 10개, 사람마다 닉네임 해시로 생김새를 정함. 공부 중이면 스탠드가 켜지고 필기 동작을 함.
 import * as THREE from 'three';
-import { ENTRANCE, WALK_SPEED, findPath, seatAnchor, seatEntry, seatSpot, slide } from './study-cafe-map.mjs';
+import { BENCH_SPOT, ENTRANCE, WALK_SPEED, findPath, seatAnchor, seatEntry, seatSpot, slide } from './study-cafe-map.mjs';
 
 const FPS = 20;
 
@@ -39,6 +39,87 @@ function drawLabel(label, name, time, state, me) {
   c.font = '600 40px "NA2 Paperlogy", "Malgun Gothic", sans-serif';
   c.fillText(`${time} · ${state}`, w / 2, 112, w - 40);
   label.texture.needsUpdate = true;
+}
+
+// 케이블 제작 순서 안내판(T568B). 색 순서는 실기 모듈(src/modules/cabling/content.mjs)과 같음.
+const WIRES = [
+  { name: '흰주황', color: '#e8862e', striped: true }, { name: '주황', color: '#e8862e' },
+  { name: '흰초록', color: '#3f9b57', striped: true }, { name: '파랑', color: '#2f79c4' },
+  { name: '흰파랑', color: '#2f79c4', striped: true }, { name: '초록', color: '#3f9b57' },
+  { name: '흰갈색', color: '#8a5a3c', striped: true }, { name: '갈색', color: '#8a5a3c' },
+];
+// 피복을 벗긴 직후에는 쌍끼리 붙어 있음: 주황 쌍, 초록 쌍, 파랑 쌍, 갈색 쌍. 값은 T568B에서 갈 자리
+const PAIR_SLOT = [0, 1, 2, 4, 5, 3, 6, 7];
+const CABLE_STEPS = [
+  ['피복 벗기기', 2.2], ['T568B 순서로 펴기', 3.6], ['끝을 가지런히 자르기', 1.8],
+  ['RJ-45 커넥터에 끼우기', 2.2], ['랜툴로 압착하기', 1.8], ['테스터로 1~8번 확인', 3.6],
+];
+const CABLE_TOTAL = CABLE_STEPS.reduce((sum, step) => sum + step[1], 0);
+const ease = t => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+
+function drawCableSteps(canvas, seconds) {
+  const c = canvas.getContext('2d'); const W = canvas.width; const H = canvas.height;
+  let rest = seconds % CABLE_TOTAL; let step = 0;
+  while (step < CABLE_STEPS.length - 1 && rest >= CABLE_STEPS[step][1]) { rest -= CABLE_STEPS[step][1]; step += 1; }
+  const p = rest / CABLE_STEPS[step][1];
+  const font = (size, weight = 600) => `${weight} ${size}px "NA2 Paperlogy", "Malgun Gothic", sans-serif`;
+  c.clearRect(0, 0, W, H);
+  c.fillStyle = '#ffffff'; c.beginPath(); c.roundRect(4, 4, W - 8, H - 8, 20); c.fill();
+  c.lineWidth = 5; c.strokeStyle = '#103b37'; c.stroke();
+  c.fillStyle = '#103b37'; c.beginPath(); c.roundRect(4, 4, W - 8, 64, [20, 20, 0, 0]); c.fill();
+  c.textBaseline = 'middle'; c.textAlign = 'left'; c.fillStyle = '#ffffff'; c.font = font(30, 700);
+  c.fillText(`${step + 1}. ${CABLE_STEPS[step][0]}`, 28, 38);
+  c.textAlign = 'right'; c.fillStyle = '#a8e5c8'; c.font = font(24); c.fillText(`T568B · ${step + 1} / ${CABLE_STEPS.length}`, W - 28, 38);
+
+  const top = 96; const gap = 30; const left = 60; const strip = 250; const tip = 420;
+  const stripped = step === 0 ? ease(p) : 1; // 피복이 물러난 정도
+  const sorted = step < 1 ? 0 : step === 1 ? ease(p) : 1; // 색 순서가 맞춰진 정도
+  const cut = step < 2 ? 0 : step === 2 ? ease(p) : 1;
+  const plugged = step < 3 ? 0 : step === 3 ? ease(p) : 1;
+  const crimp = step === 4 ? Math.sin(Math.min(1, p * 1.4) * Math.PI) : 0;
+
+  // 전선 8가닥
+  WIRES.forEach((wire, index) => {
+    const from = PAIR_SLOT.indexOf(index); const slot = from + (index - from) * sorted;
+    const y = top + slot * gap + 13;
+    const ragged = ((index * 37) % 5) * 9; const end = tip + 40 + ragged * (1 - cut) - 40 * cut;
+    const start = strip + (1 - stripped) * 190;
+    if (end > start) {
+      c.lineCap = 'round'; c.lineWidth = 15; c.strokeStyle = wire.striped ? '#ffffff' : wire.color;
+      c.beginPath(); c.moveTo(start, y); c.lineTo(end, y); c.stroke();
+      c.lineWidth = 2; c.strokeStyle = '#59635f'; c.strokeRect(start - 7, y - 8.5, end - start + 14, 17);
+      if (wire.striped) { c.lineWidth = 5; c.strokeStyle = wire.color; c.setLineDash([12, 10]); c.beginPath(); c.moveTo(start, y); c.lineTo(end, y); c.stroke(); c.setLineDash([]); }
+    }
+    if (sorted > 0.95 && plugged < 0.2) { c.textAlign = 'left'; c.fillStyle = '#192d33'; c.font = font(19); c.fillText(`${index + 1} ${wire.name}`, tip + 62, y + 1); }
+  });
+  // 피복
+  const jacketEnd = strip + (1 - stripped) * 190;
+  c.fillStyle = '#2f79c4'; c.beginPath(); c.roundRect(left - 40, top - 8, jacketEnd - left + 40, 8 * gap + 16, 26); c.fill();
+  c.fillStyle = '#ffffff'; c.font = font(20); c.textAlign = 'center'; c.fillText('UTP', (left + jacketEnd) / 2 - 20, top + 121);
+  // 자르는 선
+  if (step === 2) { c.strokeStyle = '#c2475d'; c.lineWidth = 4; c.setLineDash([10, 8]); c.beginPath(); c.moveTo(tip + 2, top - 6); c.lineTo(tip + 2, top + 8 * gap + 6); c.stroke(); c.setLineDash([]); }
+  // 커넥터: 클립이 뒤쪽이고 접점이 보이는 방향, 위에서부터 1번
+  if (step >= 3) {
+    const x = W + 20 - plugged * (W + 20 - (tip - 110));
+    c.fillStyle = '#eef6f4cc'; c.strokeStyle = '#59635f'; c.lineWidth = 3; c.beginPath(); c.roundRect(x, top - 14, 190, 8 * gap + 28, 10); c.fill(); c.stroke();
+    for (let i = 0; i < 8; i += 1) { c.fillStyle = crimp > 0.5 || step > 4 ? '#b8891f' : '#e6c15a'; c.fillRect(x + 128, top + i * gap + 4, 46, 18); c.fillStyle = '#192d33'; c.font = font(15, 700); c.textAlign = 'center'; c.fillText(String(i + 1), x + 151, top + i * gap + 14); }
+  }
+  // 랜툴 턱
+  if (step === 4) {
+    const jaw = 34 - crimp * 30; const x = tip - 120;
+    c.fillStyle = '#8c9a94'; c.fillRect(x, top - 14 - jaw - 30, 210, 30); c.fillRect(x, top + 8 * gap + 14 + jaw, 210, 30);
+    c.fillStyle = '#2f6f9f'; c.fillRect(x + 210, top - 14 - jaw - 30, 150, 22); c.fillRect(x + 210, top + 8 * gap + 22 + jaw, 150, 22);
+  }
+  // 테스터
+  if (step === 5) {
+    const lit = Math.min(8, Math.floor(p * 9.5));
+    c.fillStyle = '#f2c230'; c.beginPath(); c.roundRect(40, H - 78, W - 80, 58, 12); c.fill();
+    for (let i = 0; i < 8; i += 1) { const x = 96 + i * ((W - 192) / 7); c.fillStyle = i < lit ? '#22c55e' : '#6b5a12'; c.beginPath(); c.arc(x, H - 56, 11, 0, Math.PI * 2); c.fill(); c.fillStyle = '#192d33'; c.font = font(16, 700); c.textAlign = 'center'; c.fillText(String(i + 1), x, H - 32); }
+  } else {
+    c.textAlign = 'left'; c.fillStyle = '#687779'; c.font = font(20, 400);
+    const note = ['피복을 2~3cm 벗기고 네 쌍을 풉니다.', '초록 쌍을 갈라 3번과 6번에, 파랑 쌍을 4번과 5번에 둡니다.', '여덟 가닥의 길이를 같게 맞춥니다.', '여덟 가닥이 끝까지 닿도록 밀어 넣습니다.', '손잡이를 끝까지 쥐어 접점을 눌러 줍니다.'][step];
+    c.fillText(note, 40, H - 42);
+  }
 }
 
 function buildDesk() {
@@ -171,7 +252,7 @@ function buildPerson(id) {
   return { group, head, left, right, legs, mug, pencil, phase: (seed % 628) / 100 };
 }
 
-export function createStudyScene(container, { reducedMotion = false, seats = 10, onState, onAway, onSit, onPickSeat } = {}) {
+export function createStudyScene(container, { reducedMotion = false, seats = 10, onState, onAway, onSit, onPickSeat, onBench } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -310,6 +391,13 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     desks.push({ ...desk, anchor });
   }
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 20), new THREE.MeshBasicMaterial({ visible: false })); ground.rotation.x = -Math.PI / 2; scene.add(ground);
+  // 실습대: 누르면 그 앞으로 가서 케이블 제작을 연습함
+  const benchPick = at(new THREE.Mesh(new THREE.BoxGeometry(1.3, 2.0, 2.0), new THREE.MeshBasicMaterial({ visible: false })), -6.4, 1.0, 1.75); scene.add(benchPick);
+  const board = document.createElement('canvas'); board.width = 640; board.height = 440;
+  const boardTexture = new THREE.CanvasTexture(board); boardTexture.colorSpace = THREE.SRGBColorSpace;
+  const boardSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: boardTexture, depthTest: false, transparent: true, opacity: 0 }));
+  boardSprite.scale.set(6.0, 4.125, 1); boardSprite.position.set(-3.6, 4.7, 1.2); boardSprite.renderOrder = 20; boardSprite.visible = false; scene.add(boardSprite);
+  let benchClock = 0;
   const marker = new THREE.Mesh(new THREE.RingGeometry(0.16, 0.24, 24), new THREE.MeshBasicMaterial({ color: '#087a61', transparent: true, opacity: 0, depthWrite: false })); marker.rotation.x = -Math.PI / 2; marker.position.y = 0.02; scene.add(marker);
 
   const state = { disposed: false, last: 0, raf: 0, dirty: true, sentAt: 0, sentKey: '' };
@@ -344,7 +432,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
   let self = { name: '', time: '00:00:00' };
 
   function share(force) {
-    const s = me.mode === 'sit' ? 0 : me.moving ? 1 : 2;
+    const s = me.mode === 'sit' ? 0 : me.moving ? 1 : me.mode === 'bench' ? 3 : 2;
     const key = `${s}|${me.pos.x.toFixed(2)}|${me.pos.z.toFixed(2)}`;
     const now = performance.now();
     if (!force && (key === state.sentKey ? now - state.sentAt < 3000 : now - state.sentAt < 120)) return;
@@ -360,6 +448,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
   // 직접 조작으로 자리를 뜨면 공부를 멈춤
   function leaveByHand() {
     if (me.mode === 'sit') standUp(me);
+    if (me.mode === 'bench') { me.mode = 'stand'; onBench?.(false); }
     me.goal = null;
     if (me.studying) { me.studying = false; onAway?.(); }
   }
@@ -420,6 +509,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
       actor.moving = true;
     }
     if (!actor.path.length && actor.goal === 'sit' && actor.seat != null) sit(actor);
+    if (!actor.path.length && actor.goal === 'bench') { actor.goal = null; actor.mode = 'bench'; actor.heading = -2.4; actor.moving = false; if (actor === me) onBench?.(true); }
   }
 
   function simulate(now, dt) {
@@ -444,6 +534,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
       if (actor.mode === 'sit') standUp(actor);
       const dx = remote.x - actor.pos.x; const dz = remote.z - actor.pos.z; const distance = Math.hypot(dx, dz);
       actor.moving = distance > 0.06;
+      actor.mode = !actor.moving && remote.s === 3 ? 'bench' : 'stand'; if (actor.mode === 'bench') actor.heading = -2.4;
       if (actor.moving) { const step = Math.min(distance, Math.max(WALK_SPEED * dt, distance * 0.25)); actor.pos = { x: actor.pos.x + (dx / distance) * step, z: actor.pos.z + (dz / distance) * step }; actor.heading = Math.atan2(dx, dz); }
       place(actor);
     }
@@ -459,7 +550,13 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
       p.mug.visible = actor.mode === 'sit' && !actor.studying;
       for (const leg of p.legs) leg.rotation.x = 0;
       p.group.position.y = actor.mode === 'sit' ? -0.08 : 0;
-      if (actor.mode !== 'sit') {
+      if (actor.mode === 'bench') {
+        // 실습대 앞: 몸을 숙이고 두 손으로 랜툴을 쥐었다 폄
+        const squeeze = Math.sin(t * 5 + p.phase) * 0.18 * move;
+        p.group.rotation.x = 0.16; p.group.position.y = 0;
+        p.head.rotation.x = 0.22; p.head.rotation.z = 0;
+        p.left.rotation.x = -1.2; p.left.rotation.z = 0.35 + squeeze; p.right.rotation.x = -1.2; p.right.rotation.z = -0.35 - squeeze;
+      } else if (actor.mode !== 'sit') {
         const swing = actor.moving ? Math.sin(t * 11 + p.phase) * 0.7 * move : 0;
         p.group.rotation.x = actor.moving ? 0.08 : 0;
         p.group.position.y = actor.moving ? Math.abs(Math.sin(t * 11 + p.phase)) * 0.05 * move : 0;
@@ -498,6 +595,13 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     pointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
     raycaster.setFromCamera(pointer, camera);
     const desk = raycaster.intersectObjects(pickTargets, false)[0];
+    if (raycaster.intersectObject(benchPick, false)[0]) {
+      if (me.mode === 'bench') return;
+      const from = me.mode === 'sit' && me.seat != null ? seatEntry(me.seat) : me.pos;
+      const way = findPath(from, BENCH_SPOT);
+      if (!way.length) return;
+      leaveByHand(); me.path = way; me.goal = 'bench'; state.dirty = true; return;
+    }
     if (desk) {
       const seat = desk.object.userData.seat; const owner = state.occupied?.[seat];
       if (owner && owner !== me) return; // 남의 자리
@@ -535,6 +639,11 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     const dt = Math.min(0.25, state.last ? (now - state.last) / 1000 : 0.05);
     state.last = now;
     simulate(now, dt); paint(); pose(now);
+    // 누군가 실습 중이면 제작 순서 안내판을 띄움
+    const practicing = me.mode === 'bench' || [...actors.values()].some(actor => actor.mode === 'bench');
+    const fade = boardSprite.material.opacity + (practicing ? dt * 3 : -dt * 3);
+    boardSprite.material.opacity = Math.min(1, Math.max(0, fade)); boardSprite.visible = boardSprite.material.opacity > 0.01;
+    if (practicing) { benchClock += reducedMotion ? 0 : dt; drawCableSteps(board, reducedMotion ? 6.2 : benchClock); boardTexture.needsUpdate = true; } else benchClock = 0;
     renderer.render(scene, camera);
   }
   state.raf = requestAnimationFrame(frame);

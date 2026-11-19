@@ -3,6 +3,7 @@ export const SEAT_X = [-4.4, -2.2, 0, 2.2, 4.4];
 export const ROW_Z = [-2.9, 1.9];
 export const BOUNDS = { minX: -6.7, maxX: 10.8, minZ: -4.45, maxZ: 4.5 };
 export const ENTRANCE = { x: 1.5, z: 4.0 };
+export const BENCH_SPOT = { x: -6.25, z: 3.1 }; // 케이블링 실습대 앞
 export const WALK_SPEED = 2.6;
 const RADIUS = 0.25; // 캐릭터 몸통 반지름만큼 가구를 넓혀서 계산
 const CELL = 0.3;
@@ -111,6 +112,6 @@ export function slide(from, dx, dz) {
 export function cleanRemote(value) {
   if (!value || typeof value !== 'object') return null;
   const { id, x, z, s } = value;
-  if (typeof id !== 'string' || !/^[0-9a-f]{8}$/.test(id) || !Number.isFinite(x) || !Number.isFinite(z) || ![0, 1, 2].includes(s)) return null;
+  if (typeof id !== 'string' || !/^[0-9a-f]{8}$/.test(id) || !Number.isFinite(x) || !Number.isFinite(z) || ![0, 1, 2, 3].includes(s)) return null;
   return { id, x: Math.min(BOUNDS.maxX, Math.max(BOUNDS.minX, x)), z: Math.min(BOUNDS.maxZ, Math.max(BOUNDS.minZ, z)), s };
 }
