@@ -1,6 +1,6 @@
 // 함께 공부(공부시간 공유) 타이머 모델. 화면·통신과 분리한 순수 함수만 둠.
 export const ROOM_KEY = 'na2-study:room:v1';
-export const NAME_MAX = 12;
+export const NAME_MAX = 16;
 export const GAP_MS = 5 * 60 * 1000; // 이보다 오래 기록이 끊기면 창이 닫혀 있던 것으로 보고 그 구간은 제외
 export const DAY_SECONDS = 86400;
 const KST_OFFSET = 9 * 60 * 60 * 1000;
@@ -23,10 +23,37 @@ export function newClientId(random = globalThis.crypto) {
   return `${s.slice(0, 8)}-${s.slice(8, 12)}-${s.slice(12, 16)}-${s.slice(16, 20)}-${s.slice(20)}`;
 }
 
+// 닉네임 자동 부여: "N계층 용어 숫자". 계층은 OSI 7계층 기준이며 용어는 그 계층에 속하는 것만 묶음.
+// 목록을 바꾸면 supabase/study-room.sql의 형식 검사도 같이 바꿔야 함(테스트가 일치 여부를 확인).
+export const LAYER_TERMS = {
+  1: ['허브', '리피터', 'UTP', '광케이블', '동축케이블', 'RJ-45', '트랜시버'],
+  2: ['스위치', '브리지', 'MAC', '프레임', '이더넷', 'VLAN', 'PPP', 'HDLC', 'LLC'],
+  3: ['라우터', 'IP', 'ICMP', 'ARP', 'IGMP', '패킷', 'RIP', 'OSPF', 'BGP', '서브넷', 'NAT'],
+  4: ['TCP', 'UDP', '세그먼트', '포트번호', '흐름제어', '슬라이딩윈도우'],
+  5: ['세션', '동기점', '대화제어', 'RPC', 'NetBIOS'],
+  6: ['암호화', '압축', '인코딩', 'ASCII', 'JPEG', 'MPEG'],
+  7: ['HTTP', 'HTTPS', 'FTP', 'TFTP', 'SMTP', 'POP3', 'IMAP', 'DNS', 'DHCP', 'SNMP', 'Telnet', 'SSH', 'NTP'],
+};
+const LAYER_NAMES = { 1: '물리', 2: '데이터링크', 3: '네트워크', 4: '전송', 5: '세션', 6: '표현', 7: '응용' };
+const NAME_CHOICES = Object.entries(LAYER_TERMS).flatMap(([layer, terms]) => terms.map(term => `${layer}계층 ${term}`));
+export const NAME_PATTERN_SOURCE = `^(${Object.entries(LAYER_TERMS).map(([layer, terms]) => `${layer}계층 (${terms.join('|')})`).join('|')}) [1-9][0-9]$`;
+const NAME_PATTERN = new RegExp(NAME_PATTERN_SOURCE);
+
+export function isAutoName(value) { return typeof value === 'string' && NAME_PATTERN.test(value); }
+export function randomName(random = Math.random) {
+  const pick = NAME_CHOICES[Math.min(NAME_CHOICES.length - 1, Math.floor(random() * NAME_CHOICES.length))];
+  return `${pick} ${10 + Math.min(89, Math.floor(random() * 90))}`;
+}
+// 닉네임의 계층 설명. 예: "3계층 라우터 27" -> "OSI 3계층(네트워크 계층)"
+export function layerNote(name) {
+  const layer = isAutoName(name) ? Number(name[0]) : 0;
+  return layer ? `OSI ${layer}계층(${LAYER_NAMES[layer]} 계층)` : '';
+}
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export function emptyRoom(now, clientId = newClientId()) {
-  return { v: 1, clientId, name: '', day: dayKey(now), baseSeconds: 0, startedAt: null, lastTick: now };
+export function emptyRoom(now, clientId = newClientId(), name = randomName()) {
+  return { v: 1, clientId, name, day: dayKey(now), baseSeconds: 0, startedAt: null, lastTick: now };
 }
 
 export function parseRoom(raw, now) {
@@ -37,7 +64,7 @@ export function parseRoom(raw, now) {
   const started = Number.isFinite(value.startedAt) && value.startedAt <= now ? value.startedAt : null;
   const last = Number.isFinite(value.lastTick) && value.lastTick <= now ? value.lastTick : now;
   const day = /^\d{4}-\d{2}-\d{2}$/.test(value.day || '') ? value.day : dayKey(now);
-  return tickRoom({ v: 1, clientId: value.clientId, name: cleanName(value.name), day, baseSeconds: base, startedAt: started, lastTick: last }, now);
+  return tickRoom({ v: 1, clientId: value.clientId, name: isAutoName(value.name) ? value.name : randomName(), day, baseSeconds: base, startedAt: started, lastTick: last }, now);
 }
 
 export function loadRoom(storage, now) {

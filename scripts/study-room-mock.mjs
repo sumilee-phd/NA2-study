@@ -19,7 +19,7 @@ createServer((request, response) => {
     let input = {};
     try { input = JSON.parse(body || '{}'); } catch { response.writeHead(400, cors); response.end(); return; }
     const now = Date.now();
-    const name = String(input.p_name || '').trim().slice(0, 12);
+    const name = String(input.p_name || '').trim().slice(0, 16);
     if (input.p_client && name) rows.set(input.p_client, { nick: name, secs: Math.max(0, Math.min(86400, Number(input.p_seconds) || 0)), studying: Boolean(input.p_studying), at: now });
     const list = [...rows].filter(([, row]) => now - row.at < 60000).map(([client, row]) => ({ id: createHash('md5').update(client).digest('hex').slice(0, 8), nick: row.nick, secs: row.secs, studying: row.studying, me: client === input.p_client }));
     for (const row of demo) list.push({ id: row.id, nick: row.nick, secs: row.secs + (row.studying ? Math.floor((now - row.at) / 1000) : 0), studying: row.studying, me: false });

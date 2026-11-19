@@ -14,9 +14,14 @@
 .room-close:hover{background:#eaf5ed}
 .room-note,.room-foot,.room-hint,.room-empty,.room-error{margin:8px 0 0;font-size:12px;line-height:1.6;color:#687779}
 .room-error{color:#8a4b12}
-.room-name{display:flex;flex-direction:column;gap:4px;margin-top:12px;font-size:12px;font-weight:600;color:#52685c}
-.room-name input{min-height:44px;padding:8px 12px;border:1px solid #ccd8d1;border-radius:7px;font-size:14px;font-weight:400;color:#192d33;background:#fff}
-.room-name input:disabled{background:#f3f5f2;color:#687779}
+.room-name{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;padding:12px 16px;border:1px solid #dce4df;border-radius:7px}
+.room-name>div{display:flex;flex-direction:column;min-width:0}
+.room-name span{font-size:12px;color:#687779}
+.room-name b{font-size:16px;font-weight:600;line-height:1.5;color:#103b37;overflow-wrap:anywhere}
+.room-name small{font-size:12px;color:#087a61}
+.room-name button{flex-shrink:0;min-height:44px;padding:8px 12px;border:1px solid #ccd8d1;border-radius:7px;background:#fff;color:#29453a;font-size:12px;font-weight:600}
+.room-name button:hover:not(:disabled){background:#eaf5ed}
+.room-name button:disabled{background:#f3f5f2;color:#687779;opacity:1}
 .room-clock{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:0 12px;margin-top:16px;padding:12px 16px;background:#f3f5f2;border-radius:7px}
 .room-clock span{font-size:12px;color:#687779}
 .room-clock small{font-size:12px;font-weight:600;color:#087a61;text-align:right}

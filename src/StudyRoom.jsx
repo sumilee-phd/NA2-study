@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ROOM_KEY, NAME_MAX, cleanName, loadRoom, saveRoom, tickRoom, roomSeconds, startRoom, stopRoom, formatDuration, rosterView } from './study-room-model.mjs';
+import { ROOM_KEY, randomName, layerNote, loadRoom, saveRoom, tickRoom, roomSeconds, startRoom, stopRoom, formatDuration, rosterView } from './study-room-model.mjs';
 import './study-room.css';
 
 const API = (import.meta.env.VITE_STUDY_ROOM_URL || '').replace(/\/+$/, '');
@@ -23,7 +23,6 @@ async function beat(payload, signal) {
 export default function StudyRoom() {
   const [room, setRoom] = useState(() => loadRoom(storage(), Date.now()));
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState(room.name);
   const [roster, setRoster] = useState({ rows: [], at: 0, loaded: false });
   const [failed, setFailed] = useState(false);
   const roomRef = useRef(room);
@@ -35,7 +34,6 @@ export default function StudyRoom() {
 
   const studying = room.startedAt != null;
   const seconds = roomSeconds(room, room.lastTick);
-  const name = cleanName(draft);
 
   // 1초마다 시간 반영. 공부 중이 아니고 패널도 닫혀 있으면 멈춤
   useEffect(() => {
@@ -57,7 +55,7 @@ export default function StudyRoom() {
 
   useEffect(() => {
     const flush = () => saveRoom(storage(), tickRoom(roomRef.current, Date.now()));
-    const changed = event => { if (event.key === ROOM_KEY) { const next = loadRoom(storage(), Date.now()); setRoom(next); setDraft(next.name); } };
+    const changed = event => { if (event.key === ROOM_KEY) { setRoom(loadRoom(storage(), Date.now())); } };
     window.addEventListener('pagehide', flush);
     window.addEventListener('storage', changed);
     return () => { window.removeEventListener('pagehide', flush); window.removeEventListener('storage', changed); };
@@ -94,8 +92,8 @@ export default function StudyRoom() {
     return () => window.removeEventListener('keydown', close);
   }, [open]);
 
-  const commitName = () => { setDraft(name); setRoom(current => current.name === name ? current : { ...current, name }); };
-  const start = () => { if (!name) return; setRoom(current => startRoom({ ...current, name }, Date.now())); setDraft(name); };
+  const rename = () => setRoom(current => { let name = randomName(); while (name === current.name) name = randomName(); return { ...current, name }; });
+  const start = () => setRoom(current => startRoom(current, Date.now()));
   const stop = () => setRoom(current => stopRoom(current, Date.now()));
 
   const people = useMemo(
@@ -107,15 +105,13 @@ export default function StudyRoom() {
   return <aside className={`room ${open ? 'is-open' : ''}`} aria-label="함께 공부">
     {open && <section className="room-panel" id="room-panel">
       <header className="room-head"><h2>함께 공부</h2><button type="button" className="room-close" onClick={() => { setOpen(false); toggleRef.current?.focus(); }}>닫기</button></header>
-      <p className="room-note">공부를 시작하면 닉네임과 오늘 공부시간이 접속 중인 학습자에게 표시됩니다.</p>
-      <label className="room-name">닉네임
-        <input value={draft} maxLength={NAME_MAX * 2} onChange={event => setDraft(event.target.value)} onBlur={commitName} placeholder="실명 대신 닉네임" autoComplete="off" disabled={studying}/>
-      </label>
-      {!name && <p className="room-hint">닉네임을 입력하면 시작할 수 있습니다. 최대 {NAME_MAX}자</p>}
+      <p className="room-note">공부를 시작하면 아래 닉네임과 오늘 공부시간이 접속 중인 학습자에게 표시됩니다.</p>
+      <div className="room-name"><div><span>내 닉네임</span><b aria-live="polite">{room.name}</b><small>{layerNote(room.name)}</small></div><button type="button" onClick={rename} disabled={studying}>다른 닉네임</button></div>
+      <p className="room-hint">닉네임은 자동으로 정해집니다. 앞의 계층은 뒤 용어가 속한 OSI 계층입니다.</p>
       <div className="room-clock"><span>오늘 공부시간</span><small>{studying ? '공부 중' : seconds > 0 ? '멈춤' : '시작 전'}</small><b>{formatDuration(seconds)}</b></div>
       {studying
         ? <button type="button" className="room-action" onClick={stop}>잠시 멈춤</button>
-        : <button type="button" className="room-action primary" onClick={start} disabled={!name}>{seconds > 0 ? '이어서 공부' : '공부 시작'}</button>}
+        : <button type="button" className="room-action primary" onClick={start}>{seconds > 0 ? '이어서 공부' : '공부 시작'}</button>}
       <div className="room-list-head"><h3>접속 중</h3><span>{people.length}명 · 공부 중 {studyingCount}명</span></div>
       {failed && <p className="room-error" role="status">접속자 목록을 불러오지 못했습니다. 공부시간은 이 기기에 계속 기록됩니다.</p>}
       {!failed && roster.loaded && people.length === 0 && <p className="room-empty">지금 공부시간을 공유 중인 학습자가 없습니다.</p>}
