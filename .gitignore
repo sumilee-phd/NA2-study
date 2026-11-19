@@ -3,3 +3,4 @@ dist/
 verification/
 *.log
 .DS_Store
+*.local

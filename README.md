@@ -70,6 +70,7 @@ npm run preview
 ## 문서
 
 - [PRD](docs/PRD.md)
+- [함께 공부(공부시간 공유)](docs/STUDY_ROOM.md)
 - [실기 3영역·문제풀이 PRD](docs/PRACTICAL_PRD.md)
 - [실기 초기 문제은행 검수](docs/PRACTICAL_CONTENT_REVIEW.md)
 - [실기 3영역 변경 검증](docs/PRACTICAL_VERIFICATION.md)
