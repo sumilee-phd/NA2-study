@@ -1,0 +1,29 @@
+name: Keep Supabase awake
+
+# Supabase 무료 프로젝트는 7일 동안 요청이 없으면 일시 정지된다.
+# 7일에 딱 한 번만 부르면 예약 실행이 조금만 늦어도 7일을 넘기므로, 여유를 두고 월요일과 목요일에 한 번씩 부른다.
+# 참고: GitHub는 저장소에 60일 동안 커밋이 없으면 예약 작업을 스스로 끈다. 그때는 Actions 화면에서 다시 켠다.
+on:
+  schedule:
+    - cron: '17 21 * * 0,3' # 한국 시간 월·목 06:17
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call study_beat (list only)
+        env:
+          # 브라우저에 공개되는 값이다(.env.production과 같음). 비밀 값이 아니다.
+          STUDY_ROOM_URL: https://kgydeixgxoabrpwilhfm.supabase.co
+          STUDY_ROOM_KEY: sb_publishable_Ynn_Vzjqp5lj3MggFVI1dA_buzHyg70
+        run: |
+          code=$(curl -sS -m 30 -o body.json -w '%{http_code}' -X POST "$STUDY_ROOM_URL/rest/v1/rpc/study_beat" \
+            -H "apikey: $STUDY_ROOM_KEY" -H "Authorization: Bearer $STUDY_ROOM_KEY" -H 'Content-Type: application/json' \
+            -d '{"p_client":null,"p_name":null,"p_seconds":0,"p_studying":false}')
+          echo "HTTP $code"
+          head -c 300 body.json; echo
+          test "$code" = "200"

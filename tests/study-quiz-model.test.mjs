@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { QUIZ_EVERY, SOON_MS, ASK_MS, REVEAL_MS, autoQuiz, practiceQuiz, questionIndex, questionFile, cleanQuestion, verdict, countdown } from '../src/study-quiz-model.mjs';
+import { focusState, focusLabel, FOCUS_MS, BREAK_MS, CYCLE_MS } from '../src/study-focus-model.mjs';
+import { QUIZ_OFFSET, QUIZ_EVERY, SOON_MS, ASK_MS, REVEAL_MS, autoQuiz, practiceQuiz, questionIndex, questionFile, cleanQuestion, verdict, countdown } from '../src/study-quiz-model.mjs';
 import { QUIZ_ZONES, zoneOf, blocked, findPath, ENTRANCE } from '../src/study-cafe-map.mjs';
 
-const T0 = 1000 * QUIZ_EVERY; // 30분 경계
+const T0 = 1000 * QUIZ_EVERY + QUIZ_OFFSET; // 쉬는 시간이 시작되는 시각
 
 test('정시 퀴즈: 예고, 문제, 정답 공개, 대기 순으로 진행', () => {
   assert.deepEqual([autoQuiz(T0).phase, autoQuiz(T0).remain, autoQuiz(T0).slot], ['soon', 15, 1000]);
@@ -64,4 +65,27 @@ test('퀴즈 문항 파일: 개수와 형식이 맞고 정답이 1~4', () => {
     assert.ok(item, questionFile(i));
     assert.ok(item.title.length > 3);
   }
+});
+
+test('집중 타이머: 25분 집중, 5분 휴식이 30분마다 반복', () => {
+  const base = 1000 * CYCLE_MS;
+  assert.deepEqual([focusState(base).mode, focusState(base).remain], ['focus', FOCUS_MS]);
+  assert.equal(focusState(base + FOCUS_MS - 1).mode, 'focus');
+  assert.deepEqual([focusState(base + FOCUS_MS).mode, focusState(base + FOCUS_MS).remain], ['break', BREAK_MS]);
+  assert.equal(focusState(base + CYCLE_MS).mode, 'focus');
+  assert.equal(focusState(base + CYCLE_MS).index, 1001);
+  assert.equal(focusLabel('focus'), '집중 시간'); assert.equal(focusLabel('break'), '쉬는 시간');
+  // 한국 시간 정각은 UTC 정각과 같은 30분 경계에 놓임
+  assert.equal(focusState(Date.UTC(2026, 10, 21, 3, 0, 0)).mode, 'focus');
+  assert.equal(focusState(Date.UTC(2026, 10, 21, 3, 27, 0)).mode, 'break');
+});
+
+test('돌발퀴즈는 쉬는 시간이 시작될 때 열림', () => {
+  for (const minute of [25, 55]) {
+    const at = Date.UTC(2026, 10, 21, 3, minute, 1);
+    assert.equal(autoQuiz(at).phase, 'soon');
+    assert.equal(focusState(at).mode, 'break');
+  }
+  assert.equal(autoQuiz(Date.UTC(2026, 10, 21, 3, 0, 5)).phase, 'idle');
+  assert.equal(autoQuiz(Date.UTC(2026, 10, 21, 3, 20, 0)).next, 5 * 60 * 1000);
 });

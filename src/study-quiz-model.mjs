@@ -1,5 +1,6 @@
 // 스터디카페 돌발퀴즈: 시각으로 단계와 문제 번호를 정함. 진행자나 서버 없이 모두가 같은 문제를 봄.
-export const QUIZ_EVERY = 30 * 60 * 1000; // 매시 정각과 30분
+export const QUIZ_EVERY = 30 * 60 * 1000;
+export const QUIZ_OFFSET = 25 * 60 * 1000; // 매시 25분과 55분: 집중 타이머의 쉬는 시간이 시작될 때
 export const SOON_MS = 15000; // 예고
 export const ASK_MS = 30000; // 문제 풀이
 export const REVEAL_MS = 15000; // 정답 공개
@@ -15,9 +16,10 @@ function phaseAt(elapsed, soon) {
 
 // 정시 퀴즈의 현재 단계. slot은 30분 단위 번호로, 같은 시각이면 누구에게나 같음
 export function autoQuiz(now) {
-  const slot = Math.floor(now / QUIZ_EVERY);
-  const state = phaseAt(now - slot * QUIZ_EVERY, SOON_MS);
-  return { ...state, slot, practice: false, next: (slot + 1) * QUIZ_EVERY - now };
+  const slot = Math.floor((now - QUIZ_OFFSET) / QUIZ_EVERY);
+  const start = slot * QUIZ_EVERY + QUIZ_OFFSET;
+  const state = phaseAt(now - start, SOON_MS);
+  return { ...state, slot, practice: false, next: start + QUIZ_EVERY - now };
 }
 // 혼자 바로 풀어 보는 연습 퀴즈. startedAt은 버튼을 누른 시각
 export function practiceQuiz(now, startedAt, seed) {

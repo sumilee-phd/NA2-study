@@ -51,7 +51,7 @@
 .room-view-head span{flex:1;font-size:13px;color:#b3c8c1}
 .room-stage{position:relative;flex:1;min-height:0}
 .room-canvas{position:absolute;inset:0}
-.room-tip{position:absolute;left:12px;right:12px;bottom:8px;margin:0;padding:6px 12px;border-radius:7px;background:#ffffffd9;color:#52685c;font-size:12px;line-height:1.6;text-align:center;pointer-events:none}
+.room-tip{position:absolute;left:12px;right:12px;bottom:8px;max-height:48px;overflow:hidden;margin:0;padding:6px 12px;border-radius:7px;background:#ffffffd9;color:#52685c;font-size:12px;line-height:1.6;text-align:center;pointer-events:none}
 .room-bench-link{position:absolute;left:16px;top:16px;display:inline-flex;align-items:center;min-height:44px;padding:8px 16px;border-radius:7px;background:#087a61;color:#fff;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 4px 16px #102c2726}
 .room-bench-link:hover{background:#06664f}
 .room-quiz-chip{position:absolute;right:16px;top:16px;display:flex;align-items:center;gap:8px;padding:4px 4px 4px 12px;border:1px solid #dce4df;border-radius:7px;background:#ffffffe6;font-size:12px;color:#52685c}
@@ -67,6 +67,18 @@
 .room-quiz-result{padding:8px 12px;border-radius:7px;background:#f3f5f2}
 .room-quiz-result.is-right{background:#eaf5ed;color:#0b5a48}
 .room-quiz-result.is-wrong{background:#fdf0ee;color:#8a2f25}
+.room-focus{padding-right:4px}
+.room-focus.is-break{color:#8a4b12}
+.room-focus.is-break b{color:#8a4b12}
+.room-focus-line{margin:16px 0 0;padding:8px 12px;border-radius:7px;background:#f3f5f2;font-size:13px;font-weight:600;color:#103b37;font-variant-numeric:tabular-nums}
+.room-focus-line small{margin-left:8px;font-size:11px;font-weight:400;color:#687779}
+.room-pad{position:absolute;bottom:64px;display:flex;gap:4px;padding:4px;border:1px solid #dce4df;border-radius:7px;background:#ffffffe6}
+.room-pad-emote{left:12px}
+.room-pad-view{right:12px}
+.room-pad button{min-width:44px;min-height:44px;padding:4px 10px;border:1px solid #ccd8d1;border-radius:7px;background:#fff;color:#29453a;font-size:13px;font-weight:600;line-height:1}
+.room-pad button:hover{background:#eaf5ed}
+.room-pad-view button{font-size:16px}
+.room-pad-view button:last-child{font-size:12px}
 .room-loading{margin:0;padding:48px 24px;text-align:center;font-size:14px;color:#687779}
 .room-view-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:12px 16px;background:#fff;border-top:1px solid #dce4df}
 .room-view-foot .room-action{width:auto;min-width:160px;margin:0}
@@ -76,5 +88,5 @@
 .room-view-me b{font-size:21px;font-weight:600;font-variant-numeric:tabular-nums}
 .room-view-me small{font-size:12px;font-weight:600;color:#087a61}
 .room-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-@media (max-width:520px){.room{right:8px;bottom:8px;max-width:calc(100vw - 16px)}.room-panel{width:calc(100vw - 16px);max-height:calc(100vh - 76px)}.room-toggle{padding:8px 12px}}
+@media (max-width:520px){.room-pad-emote{bottom:120px}.room-quiz-chip{left:12px;right:12px;top:8px;justify-content:space-between}.room-quiz{top:68px}.room{right:8px;bottom:8px;max-width:calc(100vw - 16px)}.room-panel{width:calc(100vw - 16px);max-height:calc(100vh - 76px)}.room-toggle{padding:8px 12px}}
 @media print{.room{display:none}}

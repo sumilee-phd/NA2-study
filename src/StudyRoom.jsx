@@ -1,5 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ROOM_KEY, SEATS, randomName, layerNote, loadRoom, saveRoom, tickRoom, roomSeconds, startRoom, stopRoom, formatDuration, rosterView } from './study-room-model.mjs';
+import { focusState, focusLabel } from './study-focus-model.mjs';
+import { countdown } from './study-quiz-model.mjs';
 import './study-room.css';
 
 const API = (import.meta.env.VITE_STUDY_ROOM_URL || '').replace(/\/+$/, '');
@@ -115,6 +117,7 @@ export default function StudyRoom() {
     [roster, room.lastTick, room.name, seconds, studying],
   );
   const studyingCount = people.filter(person => person.studying).length;
+  const timer = focusState(room.lastTick);
   const seated = people.filter(person => person.seat).length;
   // 실습대에서 케이블 제작을 연습하는 시간도 공부시간으로 셈
   const benchChange = active => { setAtBench(active); if (active && roomRef.current.startedAt == null) start(); };
@@ -136,6 +139,7 @@ export default function StudyRoom() {
       {action}
       {fullNote}
       <button type="button" className="room-action" onClick={() => { setView(true); setOpen(false); }}>스터디카페 보기</button>
+      <p className="room-focus-line">{focusLabel(timer.mode)} · {countdown(timer.remain)} 남음 <small>집중 25분, 휴식 5분</small></p>
       <div className="room-list-head"><h3>접속 중</h3><span>{seated} / {SEATS}석 · 공부 중 {studyingCount}명</span></div>
       {failed && <p className="room-error" role="status">접속자 목록을 불러오지 못했습니다. 공부시간은 이 기기에 계속 기록됩니다.</p>}
       {!failed && roster.loaded && people.length === 0 && <p className="room-empty">지금 공부시간을 공유 중인 학습자가 없습니다.</p>}
@@ -149,7 +153,7 @@ export default function StudyRoom() {
     </section>}
     {view && <div className="room-view" role="dialog" aria-modal="true" aria-labelledby="room-view-title" tabIndex={-1} ref={viewRef}>
       <header className="room-view-head"><h2 id="room-view-title">NA2 스터디카페</h2><span>{seated} / {SEATS}석 · 공부 중 {studyingCount}명</span><button type="button" className="room-close" onClick={() => { setView(false); toggleRef.current?.focus(); }}>닫기</button></header>
-      <div className="room-stage"><Suspense fallback={<p className="room-loading" role="status">스터디카페를 준비하고 있습니다…</p>}><StudyScene people={people} self={selfInfo} onAway={stop} onSit={start} onPickSeat={pickSeat} onBench={benchChange} onQuizStand={quizStand}/></Suspense>{atBench && <a className="room-bench-link" href="#/cabling" onClick={() => { setView(false); setAtBench(false); }}>케이블링 훈련 열기</a>}<p className="room-tip">바닥을 누르거나 방향키(WASD)로 이동합니다. 빈 자리를 누르면 앉고, 자리를 뜨면 공부시간이 멈춥니다. 실습대를 누르면 케이블 제작 순서를 연습합니다. 매시 정각과 30분에는 돌발퀴즈가 열립니다. 움직임은 참가자 브라우저끼리 직접 연결해 공유합니다.</p></div>
+      <div className="room-stage"><Suspense fallback={<p className="room-loading" role="status">스터디카페를 준비하고 있습니다…</p>}><StudyScene people={people} self={selfInfo} onAway={stop} onSit={start} onPickSeat={pickSeat} onBench={benchChange} onQuizStand={quizStand}/></Suspense>{atBench && <a className="room-bench-link" href="#/cabling" onClick={() => { setView(false); setAtBench(false); }}>케이블링 훈련 열기</a>}<p className="room-tip">바닥을 누르거나 방향키(WASD)로 이동하고, 빈 자리를 누르면 앉습니다. 끌면 시점이 돌고 휠이나 두 손가락으로 확대합니다. 쉬는 시간이 시작되면 돌발퀴즈가 열립니다.</p></div>
       <footer className="room-view-foot"><div className="room-view-me"><span>{room.name}</span><b>{formatDuration(seconds)}</b><small>{studying ? (inQuiz ? '퀴즈 중' : atBench ? '실습 중' : '공부 중') : seconds > 0 ? '멈춤' : '시작 전'}</small></div>{action}{fullNote}</footer>
       <ul className="room-sr">{people.filter(person => person.seat).map(person => <li key={person.id}>{person.seat}번 자리 {person.name}, {person.studying ? '공부 중' : '멈춤'}, {formatDuration(person.seconds)}</li>)}</ul>
     </div>}

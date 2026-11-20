@@ -2,7 +2,7 @@
 export const SEAT_X = [-4.4, -2.2, 0, 2.2, 4.4];
 export const ROW_Z = [-2.9, 1.9];
 export const BOUNDS = { minX: -6.7, maxX: 10.8, minZ: -4.45, maxZ: 4.5 };
-export const ENTRANCE = { x: 6.15, z: 2.2 };
+export const ENTRANCE = { x: 6.15, z: 1.0 };
 // 돌발퀴즈 답 구역: 앞줄 책상 앞 빈 바닥에 1~4번을 나란히 둠
 export const QUIZ_ZONES = [-4.2, -1.4, 1.4, 4.2].map((x, i) => ({ n: i + 1, x, z: 3.65, w: 2.5, d: 1.5 }));
 export function zoneOf(x, z) { for (const zone of QUIZ_ZONES) if (Math.abs(x - zone.x) <= zone.w / 2 && Math.abs(z - zone.z) <= zone.d / 2) return zone.n; return null; }
@@ -116,5 +116,8 @@ export function cleanRemote(value) {
   if (!value || typeof value !== 'object') return null;
   const { id, x, z, s } = value;
   if (typeof id !== 'string' || !/^[0-9a-f]{8}$/.test(id) || !Number.isFinite(x) || !Number.isFinite(z) || ![0, 1, 2, 3].includes(s)) return null;
-  return { id, x: Math.min(BOUNDS.maxX, Math.max(BOUNDS.minX, x)), z: Math.min(BOUNDS.maxZ, Math.max(BOUNDS.minZ, z)), s };
+  // e는 이모트 종류(0은 없음), et는 몇 번째 이모트인지
+  const e = [1, 2, 3].includes(value.e) ? value.e : 0;
+  const et = Number.isInteger(value.et) && value.et >= 0 && value.et < 1e9 ? value.et : 0;
+  return { id, x: Math.min(BOUNDS.maxX, Math.max(BOUNDS.minX, x)), z: Math.min(BOUNDS.maxZ, Math.max(BOUNDS.minZ, z)), s, e, et };
 }

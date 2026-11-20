@@ -252,7 +252,7 @@ function buildPerson(id) {
   return { group, head, left, right, legs, mug, pencil, phase: (seed % 628) / 100 };
 }
 
-export function createStudyScene(container, { reducedMotion = false, seats = 10, onState, onAway, onSit, onPickSeat, onBench, onQuizStand } = {}) {
+export function createStudyScene(container, { reducedMotion = false, seats = 10, onState, onAway, onSit, onPickSeat, onBench, onQuizStand, onEnter } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -469,13 +469,69 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     }
   }
 
+  // 시점: 좌우 회전과 확대. 확대할수록 내 캐릭터를 따라감
+  const YAW_MAX = 0.85; const ZOOM_MAX = 3.4;
+  const view = { yaw: 0, yawGoal: 0, zoom: 1, zoomGoal: 1, back: 1, touched: false, x: 1.6, z: -0.6 };
+  function aim(snap, dt = 0.05) {
+    const k = snap ? 1 : Math.min(1, dt * 6);
+    view.yaw += (view.yawGoal - view.yaw) * k; view.zoom += (view.zoomGoal - view.zoom) * k;
+    const follow = Math.min(1, Math.max(0, (view.zoom - 1) / 0.8));
+    const mine = me.root.position;
+    view.x += (1.6 + (mine.x - 1.6) * follow - view.x) * k; view.z += (-0.6 + (mine.z + 0.6) * follow - view.z) * k;
+    const reach = (14.6 * view.back) / view.zoom;
+    camera.position.set(view.x + Math.sin(view.yaw) * reach, (7.6 * view.back) / view.zoom, view.z + Math.cos(view.yaw) * reach);
+    camera.lookAt(view.x, 0.9, view.z);
+  }
+  function turnView(amount) { view.yawGoal = Math.min(YAW_MAX, Math.max(-YAW_MAX, view.yawGoal + amount)); view.touched = true; state.dirty = true; }
+  function zoomView(factor) { view.zoomGoal = Math.min(ZOOM_MAX, Math.max(1, view.zoomGoal * factor)); view.touched = true; state.dirty = true; }
+  function resetView() { view.yawGoal = 0; view.zoomGoal = camera.aspect < 0.9 ? 2.2 : 1; view.touched = false; state.dirty = true; }
+
+  // 이모트: 짧은 동작과 말풍선. 다른 참가자에게는 위치와 함께 전해짐
+  const EMOTES = { 1: '안녕하세요', 2: '짝짝짝', 3: '화이팅' };
+  function playEmote(actor, code) {
+    if (!actor || !EMOTES[code]) return;
+    if (!actor.bubble) {
+      const canvas = document.createElement('canvas'); canvas.width = 320; canvas.height = 120;
+      const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true }));
+      sprite.scale.set(1.5, 0.56, 1); sprite.position.set(0, 2.85, 0); sprite.renderOrder = 11; actor.root.add(sprite);
+      actor.bubble = { canvas, texture, sprite };
+    }
+    const c = actor.bubble.canvas.getContext('2d'); c.clearRect(0, 0, 320, 120);
+    c.fillStyle = '#fff8dc'; c.strokeStyle = '#a8873a'; c.lineWidth = 5; c.beginPath(); c.roundRect(6, 6, 308, 84, 30); c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(140, 88); c.lineTo(160, 114); c.lineTo(180, 88); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#fff8dc'; c.fillRect(142, 80, 36, 10);
+    c.fillStyle = '#192d33'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = '700 44px "NA2 Paperlogy", "Malgun Gothic", sans-serif'; c.fillText(EMOTES[code], 160, 50);
+    actor.bubble.texture.needsUpdate = true; actor.bubble.sprite.visible = true;
+    actor.emote = { code, until: performance.now() + 2600 };
+    state.dirty = true;
+  }
+  function stepEmotes(now) {
+    const t = now / 1000;
+    for (const actor of [me, ...actors.values()]) {
+      if (!actor.emote) continue;
+      if (now > actor.emote.until) { actor.emote = null; if (actor.bubble) actor.bubble.sprite.visible = false; continue; }
+      if (reducedMotion) continue;
+      const p = actor.person;
+      if (actor.emote.code === 1) { p.right.rotation.x = -0.2; p.right.rotation.z = -2.5 + Math.sin(t * 12) * 0.35; }
+      else if (actor.emote.code === 2) { const clap = Math.abs(Math.sin(t * 13)) * 0.45; p.left.rotation.x = -1.35; p.right.rotation.x = -1.35; p.left.rotation.z = 0.1 + clap; p.right.rotation.z = -0.1 - clap; }
+      else { p.left.rotation.x = 0; p.right.rotation.x = 0; p.left.rotation.z = 2.5; p.right.rotation.z = -2.5; if (actor.mode !== 'sit') p.group.position.y = Math.abs(Math.sin(t * 8)) * 0.18; }
+    }
+  }
+  function emote(code) {
+    const now = performance.now();
+    if (!EMOTES[code] || now - (me.emoteAt || 0) < 1200) return;
+    me.emoteAt = now; me.emoteCode = code; me.emoteSeq = (me.emoteSeq || 0) + 1;
+    playEmote(me, code); share(true);
+  }
+
   function share(force) {
     const s = me.mode === 'sit' ? 0 : me.moving ? 1 : me.mode === 'bench' ? 3 : 2;
-    const key = `${s}|${me.pos.x.toFixed(2)}|${me.pos.z.toFixed(2)}`;
+    const key = `${s}|${me.pos.x.toFixed(2)}|${me.pos.z.toFixed(2)}|${me.emoteSeq || 0}`;
     const now = performance.now();
     if (!force && (key === state.sentKey ? now - state.sentAt < 3000 : now - state.sentAt < 120)) return;
     state.sentKey = key; state.sentAt = now;
-    onState?.({ x: Number(me.pos.x.toFixed(2)), z: Number(me.pos.z.toFixed(2)), s });
+    onState?.({ x: Number(me.pos.x.toFixed(2)), z: Number(me.pos.z.toFixed(2)), s, e: me.emoteCode || 0, et: me.emoteSeq || 0 });
   }
 
   function walkTo(actor, point, goal) {
@@ -502,7 +558,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
       if (person.me) { myRow = { ...person, seat }; continue; }
       seen.add(person.id);
       let actor = actors.get(person.id);
-      if (!actor) { actor = makeActor(person.id); actors.set(person.id, actor); actor.seat = seat; sit(actor); }
+      if (!actor) { actor = makeActor(person.id); actors.set(person.id, actor); actor.seat = seat; sit(actor); if (state.listed) onEnter?.(); }
       if (actor.seat !== seat) { actor.seat = seat; if (actor.mode === 'sit') sit(actor); }
       actor.studying = person.studying; actor.name = person.name; actor.time = person.time;
       occupied[seat] = actor;
@@ -520,7 +576,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
       if (me.mode === 'sit') standUp(me);
       me.rosterId = null; me.seat = null; me.studying = false; if (me.goal === 'sit') { me.goal = null; me.path = []; }
     }
-    state.occupied = occupied;
+    state.occupied = occupied; state.listed = true;
     const [top] = skyColors(new Date(Date.now() + 9 * 3600000).getUTCHours());
     for (const sky of skyMaterials) sky.color.set(top);
     state.dirty = true;
@@ -620,15 +676,36 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
   // 조작: 방향키·WASD, 바닥과 책상 누르기
   const KEY = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', KeyA: 'left', KeyD: 'right', KeyW: 'up', KeyS: 'down' };
   const typing = event => { const tag = event.target?.tagName; return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || event.target?.isContentEditable; };
-  const keyDown = event => { const k = KEY[event.code]; if (!k || typing(event) || event.ctrlKey || event.metaKey || event.altKey) return; event.preventDefault(); keys.add(k); state.dirty = true; };
+  const HOT = { KeyQ: () => turnView(0.42), KeyE: () => turnView(-0.42), Equal: () => zoomView(1.25), NumpadAdd: () => zoomView(1.25), Minus: () => zoomView(0.8), NumpadSubtract: () => zoomView(0.8), Digit0: resetView, Digit1: () => emote(1), Digit2: () => emote(2), Digit3: () => emote(3) };
+  const keyDown = event => {
+    if (typing(event) || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (HOT[event.code]) { event.preventDefault(); if (!event.repeat) HOT[event.code](); return; }
+    const k = KEY[event.code]; if (!k) return; event.preventDefault(); keys.add(k); state.dirty = true;
+  };
   const keyUp = event => { const k = KEY[event.code]; if (k) keys.delete(k); };
   const blur = () => keys.clear();
   window.addEventListener('keydown', keyDown); window.addEventListener('keyup', keyUp); window.addEventListener('blur', blur);
 
   const raycaster = new THREE.Raycaster(); const pointer = new THREE.Vector2(); let down = null;
-  const pointerDown = event => { down = { x: event.clientX, y: event.clientY }; };
+  const touches = new Map(); let pinch = 0; let dragged = false;
+  const spread = () => { const [a, b] = [...touches.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+  const pointerDown = event => {
+    touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    try { renderer.domElement.setPointerCapture(event.pointerId); } catch { /* 일부 기기는 지원하지 않음 */ }
+    if (touches.size === 1) { down = { x: event.clientX, y: event.clientY }; dragged = false; } else { down = null; dragged = true; pinch = touches.size === 2 ? spread() : 0; }
+  };
+  // 끌면 좌우로 돌리고, 두 손가락을 벌리면 확대
+  const pointerMove = event => {
+    const last = touches.get(event.pointerId); if (!last) return;
+    touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (touches.size === 2) { const now = spread(); if (pinch > 0 && now > 0) zoomView(now / pinch); pinch = now; return; }
+    if (down && (dragged || Math.hypot(event.clientX - down.x, event.clientY - down.y) > 8)) { dragged = true; turnView(-(event.clientX - last.x) * 0.006); }
+  };
+  const pointerCancel = event => { touches.delete(event.pointerId); down = null; };
+  const wheel = event => { event.preventDefault(); zoomView(event.deltaY < 0 ? 1.15 : 1 / 1.15); };
   const pointerUp = event => {
-    if (!down || Math.hypot(event.clientX - down.x, event.clientY - down.y) > 8) { down = null; return; }
+    touches.delete(event.pointerId);
+    if (dragged || !down || Math.hypot(event.clientX - down.x, event.clientY - down.y) > 8) { down = null; return; }
     down = null;
     const rect = renderer.domElement.getBoundingClientRect();
     pointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
@@ -656,7 +733,9 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     const end = path[path.length - 1]; marker.position.set(end.x, 0.02, end.z); marker.material.opacity = 0.9; state.dirty = true;
   };
   renderer.domElement.addEventListener('pointerdown', pointerDown); renderer.domElement.addEventListener('pointerup', pointerUp);
-  renderer.domElement.style.touchAction = 'manipulation'; renderer.domElement.style.cursor = 'pointer';
+  renderer.domElement.addEventListener('pointermove', pointerMove); renderer.domElement.addEventListener('pointercancel', pointerCancel);
+  renderer.domElement.addEventListener('wheel', wheel, { passive: false });
+  renderer.domElement.style.touchAction = 'none'; renderer.domElement.style.cursor = 'pointer';
 
   function resize() {
     const width = Math.max(1, container.clientWidth); const height = Math.max(1, container.clientHeight);
@@ -664,9 +743,10 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     renderer.domElement.style.width = '100%'; renderer.domElement.style.height = '100%'; renderer.domElement.style.display = 'block';
     camera.aspect = width / height;
     // 좁은 화면에서는 방 전체가 들어오도록 물러남
-    const back = Math.max(1, 2.15 / camera.aspect);
-    camera.position.set(1.6, 7.6 * back, 14.6 * back); camera.lookAt(1.6, 0.9, -0.6);
-    camera.updateProjectionMatrix(); state.dirty = true;
+    view.back = Math.max(1, 2.15 / camera.aspect);
+    // 세로로 긴 화면에서는 처음부터 내 캐릭터 쪽으로 당겨서 보여 줌
+    if (!view.touched) view.zoomGoal = camera.aspect < 0.9 ? 2.2 : 1;
+    camera.updateProjectionMatrix(); aim(true); state.dirty = true;
   }
   const observer = new ResizeObserver(resize); observer.observe(container); resize();
 
@@ -677,7 +757,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     if (now - state.last < 1000 / FPS - 4) return;
     const dt = Math.min(0.25, state.last ? (now - state.last) / 1000 : 0.05);
     state.last = now;
-    simulate(now, dt); paint(); pose(now); stepQuiz(now, dt);
+    simulate(now, dt); paint(); pose(now); stepQuiz(now, dt); stepEmotes(now); aim(false, dt);
     // 누군가 실습 중이면 제작 순서 안내판을 띄움
     const practicing = me.mode === 'bench' || [...actors.values()].some(actor => actor.mode === 'bench');
     const fade = boardSprite.material.opacity + (practicing ? dt * 3 : -dt * 3);
@@ -690,7 +770,14 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
   return {
     update,
     // 다른 참가자가 직접 보낸 위치(형식 확인을 마친 값)
-    setRemote(value) { if (value.id !== me.rosterId) remotes.set(value.id, { ...value, at: performance.now() }); },
+    setRemote(value) {
+      if (value.id === me.rosterId) return;
+      const before = remotes.get(value.id);
+      remotes.set(value.id, { ...value, at: performance.now() });
+      // 처음 받은 값은 예전에 한 이모트일 수 있으므로 넘어가고, 번호가 바뀔 때만 보여 줌
+      if (before && value.e && value.et !== before.et) playEmote(actors.get(value.id), value.e);
+    },
+    emote, turnView, zoomView, resetView,
     dropRemote(id) { remotes.delete(id); },
     announce() { share(true); },
     // 돌발퀴즈: 진행 여부와 공개된 정답(1~4, 공개 전에는 null)
