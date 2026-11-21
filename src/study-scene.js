@@ -404,6 +404,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
   const actors = new Map(); // 다른 참가자: 서버가 준 id -> 캐릭터
   const remotes = new Map(); // 다른 참가자가 직접 보낸 위치
   const keys = new Set();
+  const stick = { x: 0, z: 0 }; // 세로 화면 조이스틱(-1~1)
 
   function makeActor(id) {
     const person = buildPerson(id);
@@ -470,21 +471,25 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
   }
 
   // 시점: 좌우 회전과 확대. 확대할수록 내 캐릭터를 따라감
-  const YAW_MAX = 0.85; const ZOOM_MAX = 3.4;
-  const view = { yaw: 0, yawGoal: 0, zoom: 1, zoomGoal: 1, back: 1, touched: false, x: 1.6, z: -0.6 };
+  const YAW_MAX = 0.85;
+  // 세로로 긴 화면은 게더타운처럼 위에서 내려다보며 항상 내 캐릭터를 따라감
+  const PITCH_WIDE = Math.atan2(7.6, 14.6); const PITCH_TALL = 0.98; const REACH = Math.hypot(7.6, 14.6);
+  const zoomMax = () => (view.portrait ? 7 : 3.4); const zoomHome = () => (view.portrait ? 3 : 1);
+  const view = { yaw: 0, yawGoal: 0, zoom: 1, zoomGoal: 1, back: 1, touched: false, portrait: false, pitch: PITCH_WIDE, x: 1.6, z: -0.6 };
   function aim(snap, dt = 0.05) {
     const k = snap ? 1 : Math.min(1, dt * 6);
     view.yaw += (view.yawGoal - view.yaw) * k; view.zoom += (view.zoomGoal - view.zoom) * k;
-    const follow = Math.min(1, Math.max(0, (view.zoom - 1) / 0.8));
+    const follow = view.portrait ? 1 : Math.min(1, Math.max(0, (view.zoom - 1) / 0.8));
+    view.pitch += ((view.portrait ? PITCH_TALL : PITCH_WIDE) - view.pitch) * k;
     const mine = me.root.position;
     view.x += (1.6 + (mine.x - 1.6) * follow - view.x) * k; view.z += (-0.6 + (mine.z + 0.6) * follow - view.z) * k;
-    const reach = (14.6 * view.back) / view.zoom;
-    camera.position.set(view.x + Math.sin(view.yaw) * reach, (7.6 * view.back) / view.zoom, view.z + Math.cos(view.yaw) * reach);
+    const far = (REACH * view.back) / view.zoom; const reach = far * Math.cos(view.pitch);
+    camera.position.set(view.x + Math.sin(view.yaw) * reach, far * Math.sin(view.pitch), view.z + Math.cos(view.yaw) * reach);
     camera.lookAt(view.x, 0.9, view.z);
   }
   function turnView(amount) { view.yawGoal = Math.min(YAW_MAX, Math.max(-YAW_MAX, view.yawGoal + amount)); view.touched = true; state.dirty = true; }
-  function zoomView(factor) { view.zoomGoal = Math.min(ZOOM_MAX, Math.max(1, view.zoomGoal * factor)); view.touched = true; state.dirty = true; }
-  function resetView() { view.yawGoal = 0; view.zoomGoal = camera.aspect < 0.9 ? 2.2 : 1; view.touched = false; state.dirty = true; }
+  function zoomView(factor) { view.zoomGoal = Math.min(zoomMax(), Math.max(1, view.zoomGoal * factor)); view.touched = true; state.dirty = true; }
+  function resetView() { view.yawGoal = 0; view.zoomGoal = zoomHome(); view.touched = false; state.dirty = true; }
 
   // 이모트: 짧은 동작과 말풍선. 다른 참가자에게는 위치와 함께 전해짐
   const EMOTES = { 1: '안녕하세요', 2: '짝짝짝', 3: '화이팅' };
@@ -611,11 +616,15 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     // 내 캐릭터: 키보드가 먼저, 없으면 누른 곳까지 걷기
     let kx = 0; let kz = 0;
     if (keys.has('left')) kx -= 1; if (keys.has('right')) kx += 1; if (keys.has('up')) kz -= 1; if (keys.has('down')) kz += 1;
-    if (kx || kz) {
+    kx += stick.x; kz += stick.z;
+    if (Math.hypot(kx, kz) > 0.2) {
       leaveByHand(); me.path = [];
-      const length = Math.hypot(kx, kz); const step = WALK_SPEED * dt;
-      const next = slide(me.pos, (kx / length) * step, (kz / length) * step);
-      me.moving = next.x !== me.pos.x || next.z !== me.pos.z; me.heading = Math.atan2(kx, kz); me.pos = next;
+      // 화면 기준 방향을 돌아간 시점에 맞춰 바닥 방향으로 바꿈. 조이스틱은 기울인 만큼 빠르게
+      const length = Math.hypot(kx, kz); const step = WALK_SPEED * dt * Math.min(1, length);
+      const cos = Math.cos(view.yaw); const sin = Math.sin(view.yaw);
+      const wx = (kx * cos + kz * sin) / length; const wz = (-kx * sin + kz * cos) / length;
+      const next = slide(me.pos, wx * step, wz * step);
+      me.moving = next.x !== me.pos.x || next.z !== me.pos.z; me.heading = Math.atan2(wx, wz); me.pos = next;
     } else if (me.mode !== 'sit') stepPath(me, dt);
     else me.moving = false;
     place(me); share(false);
@@ -745,7 +754,9 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
     // 좁은 화면에서는 방 전체가 들어오도록 물러남
     view.back = Math.max(1, 2.15 / camera.aspect);
     // 세로로 긴 화면에서는 처음부터 내 캐릭터 쪽으로 당겨서 보여 줌
-    if (!view.touched) view.zoomGoal = camera.aspect < 0.9 ? 2.2 : 1;
+    const tall = camera.aspect < 0.9;
+    if (tall !== view.portrait) { view.portrait = tall; view.touched = false; }
+    if (!view.touched) view.zoomGoal = zoomHome();
     camera.updateProjectionMatrix(); aim(true); state.dirty = true;
   }
   const observer = new ResizeObserver(resize); observer.observe(container); resize();
@@ -778,6 +789,7 @@ export function createStudyScene(container, { reducedMotion = false, seats = 10,
       if (before && value.e && value.et !== before.et) playEmote(actors.get(value.id), value.e);
     },
     emote, turnView, zoomView, resetView,
+    setStick(x, z) { stick.x = Math.min(1, Math.max(-1, Number(x) || 0)); stick.z = Math.min(1, Math.max(-1, Number(z) || 0)); state.dirty = true; },
     dropRemote(id) { remotes.delete(id); },
     announce() { share(true); },
     // 돌발퀴즈: 진행 여부와 공개된 정답(1~4, 공개 전에는 null)
